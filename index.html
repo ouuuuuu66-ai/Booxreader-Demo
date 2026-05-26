@@ -3,18 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>设置应用范围图标原型</title>
+  <title>当前书独立排版原型</title>
   <style>
     :root {
-      --paper: #f7f7f4;
-      --panel: #ffffff;
-      --text: #1f2529;
-      --muted: #8d8d8d;
-      --line: #ececec;
-      --accent: #d46a50;
-      --soft: #fff1ed;
-      --reader-size: 20px;
-      --reader-leading: 1.5;
+      --paper: #fffefa;
+      --panel: #fffefa;
+      --text: #111;
+      --muted: #7a7d80;
+      --line: #eeeeec;
+      --accent: #c6402d;
+      --soft: #fff3ef;
+      --reader-size: 21px;
+      --reader-leading: 1.52;
       --reader-x: 26px;
     }
 
@@ -25,7 +25,7 @@
       min-height: 100vh;
       display: grid;
       place-items: center;
-      background: #ece8e5;
+      background: #ede9e5;
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
     }
@@ -40,17 +40,17 @@
     }
 
     .reader {
-      height: 296px;
-      padding: 42px var(--reader-x) 18px;
+      height: 306px;
+      padding: 42px var(--reader-x) 16px;
       overflow: hidden;
       background: var(--paper);
       transition: padding .18s ease, background .18s ease;
     }
 
     .mini-title {
-      margin: 0 0 22px;
-      color: #aaa;
-      font-size: 12px;
+      margin: 0 0 24px;
+      color: #9c9c9c;
+      font-size: 13px;
     }
 
     .reader-copy {
@@ -62,7 +62,7 @@
     }
 
     .sheet {
-      height: 504px;
+      height: 494px;
       display: flex;
       flex-direction: column;
       background: var(--panel);
@@ -71,82 +71,69 @@
 
     .settings {
       flex: 1;
-      padding: 20px 22px 10px;
+      padding: 22px 22px 8px;
       overflow: hidden;
     }
 
     .heading-row {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 20px;
+      gap: 18px;
+      margin-bottom: 22px;
     }
 
     .heading-row strong {
-      font-size: 15px;
-      line-height: 28px;
+      font-size: 17px;
+      line-height: 30px;
     }
 
-    .scope-pill {
-      height: 32px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 0 10px;
+    .scope-icon {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
       border: 0;
-      border-radius: 999px;
-      background: var(--soft);
-      color: var(--accent);
-      font: inherit;
-      font-size: 12px;
-      font-weight: 600;
+      background: transparent;
+      color: #111;
       cursor: pointer;
-      transition: background .18s ease, color .18s ease, box-shadow .18s ease;
+      padding: 0;
+      transition: color .16s ease, transform .16s ease;
     }
 
-    .scope-pill svg {
-      width: 14px;
-      height: 14px;
+    .scope-icon svg {
+      width: 27px;
+      height: 27px;
       stroke: currentColor;
-      stroke-width: 2;
+      stroke-width: 1.9;
       fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
-    .scope-pill::after {
-      content: "›";
-      margin-left: 1px;
-      color: currentColor;
-      font-size: 15px;
-      line-height: 1;
+    .scope-icon.active {
+      color: var(--accent);
     }
 
-    .scope-pill.global {
-      background: #f3f3f3;
-      color: #777;
-    }
-
-    .scope-pill.all {
-      background: var(--accent);
-      color: #fff;
-      box-shadow: 0 8px 18px rgba(212, 106, 80, .2);
+    .scope-icon:active {
+      transform: scale(.94);
     }
 
     .presets {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-bottom: 24px;
+      gap: 12px;
+      margin-bottom: 21px;
     }
 
     .preset {
       width: 100%;
       height: 48px;
-      border: 1px solid #ddd;
+      border: 1px solid #dedede;
       border-radius: 3px;
       background: #f8f8f8;
       color: #111;
       font: inherit;
+      font-size: 16px;
       cursor: pointer;
       position: relative;
     }
@@ -160,44 +147,39 @@
       content: "*";
       position: absolute;
       top: 7px;
-      right: 8px;
-      color: #888;
+      right: 9px;
+      color: var(--accent);
       font-size: 12px;
     }
 
-    .preset:nth-child(2) { background: #d5cfc4; }
-    .preset:nth-child(3) { background: #ececec; }
-    .preset:nth-child(4) { background: linear-gradient(135deg, #d9edf1, #e7f0ed); }
+    .preset:nth-child(2) { background: #d8d1c7; }
+    .preset:nth-child(3) { background: #f1f1f1; }
+    .preset:nth-child(4) { background: #e2f3f5; }
 
     .section-title {
       display: grid;
       grid-template-columns: 1fr auto;
-      margin-bottom: 8px;
-      color: #222;
+      margin-bottom: 9px;
+      color: var(--muted);
       font-size: 14px;
       font-weight: 700;
-    }
-
-    .section-title span {
-      color: #777;
-      font-weight: 500;
     }
 
     .control {
       display: grid;
       grid-template-columns: 20px 1fr 20px;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 20px;
-      color: #777;
-      font-size: 16px;
+      gap: 12px;
+      margin-bottom: 18px;
+      color: var(--muted);
+      font-size: 17px;
     }
 
     .two-controls {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 20px;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
 
     .mini-control .section-title {
@@ -206,11 +188,11 @@
 
     .mini-line {
       display: grid;
-      grid-template-columns: 20px 1fr 20px;
+      grid-template-columns: 20px 1fr;
       align-items: center;
-      gap: 8px;
-      color: #777;
-      font-size: 15px;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 16px;
     }
 
     input[type="range"] {
@@ -223,32 +205,46 @@
 
     input[type="range"]::-webkit-slider-runnable-track {
       height: 2px;
-      background: #eeeeee;
+      background: #ecebea;
     }
 
     input[type="range"]::-webkit-slider-thumb {
-      width: 14px;
-      height: 14px;
-      margin-top: -6px;
+      width: 17px;
+      height: 17px;
+      margin-top: -7.5px;
       appearance: none;
       border: 0;
-      border-radius: 2px;
-      background: #a54a3a;
+      border-radius: 3px;
+      background: #b74736;
+      transform: rotate(45deg);
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 2px;
+      background: #ecebea;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 17px;
+      height: 17px;
+      border: 0;
+      border-radius: 3px;
+      background: #b74736;
       transform: rotate(45deg);
     }
 
     .colors {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 26px;
-      margin: 2px 0 26px;
+      gap: 34px;
+      margin: 4px 0 20px;
     }
 
     .color {
-      width: 26px;
-      height: 26px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
+      width: 28px;
+      height: 28px;
+      border: 1px solid #d9d9d9;
+      border-radius: 9px;
       background: var(--bg);
       cursor: pointer;
     }
@@ -265,11 +261,11 @@
 
     .outline-button {
       height: 38px;
-      border: 1px solid #ead2cb;
-      background: #fffaf7;
-      color: #4f4b48;
+      border: 1px solid #efc8bf;
+      background: #fffefa;
+      color: #333;
       font: inherit;
-      font-size: 13px;
+      font-size: 14px;
       cursor: pointer;
     }
 
@@ -280,20 +276,20 @@
       grid-template-columns: repeat(5, 1fr);
       align-items: center;
       border-top: 1px solid var(--line);
-      background: #fff;
+      background: #fffefa;
     }
 
     .tab {
       height: 64px;
       border: 0;
       background: transparent;
-      color: #302f2d;
+      color: #121212;
       font-size: 23px;
       cursor: pointer;
     }
 
     .tab.active {
-      color: #a54a3a;
+      color: var(--accent);
       font-weight: 700;
     }
 
@@ -310,20 +306,20 @@
       display: flex;
     }
 
-    .action-sheet {
+    .dialog {
       width: 100%;
-      padding: 76px 24px 24px;
+      padding: 22px 22px 24px;
       border-radius: 20px 20px 0 0;
       background: #fff;
       box-shadow: 0 -18px 40px rgba(0,0,0,.18);
       position: relative;
     }
 
-    .action-sheet::before {
+    .dialog::before {
       content: "";
       position: absolute;
       left: 50%;
-      top: 20px;
+      top: 16px;
       width: 40px;
       height: 4px;
       border-radius: 999px;
@@ -331,87 +327,46 @@
       transform: translateX(-50%);
     }
 
-    .action-sheet h2 {
-      margin: 0 0 18px;
-      font-size: 22px;
+    .dialog h2 {
+      margin: 34px 0 10px;
+      font-size: 20px;
       font-weight: 800;
       letter-spacing: 0;
     }
 
-    .action-sheet p {
-      margin: 0 0 48px;
-      color: #575b61;
-      font-size: 15px;
+    .dialog p {
+      margin: 0 0 22px;
+      color: #555b62;
+      font-size: 14px;
       line-height: 1.55;
     }
 
-    .sheet-option {
+    .dialog-actions {
+      display: grid;
+      gap: 10px;
+    }
+
+    .dialog-button {
       width: 100%;
-      height: 58px;
-      display: flex;
-      align-items: center;
-      gap: 18px;
-      margin-bottom: 12px;
-      padding: 0 24px;
-      border: 0;
+      height: 48px;
+      border: 1px solid #d8d8d8;
       border-radius: 8px;
       background: #f8f8f8;
       color: #111;
       font: inherit;
       font-size: 16px;
-      font-weight: 500;
-      text-align: left;
+      font-weight: 700;
       cursor: pointer;
     }
 
-    .radio-mark {
-      width: 24px;
-      height: 24px;
-      display: grid;
-      place-items: center;
-      border: 2px solid #3f3f3f;
-      border-radius: 50%;
-      color: transparent;
-      font-size: 17px;
-      line-height: 1;
-      flex: 0 0 auto;
+    .dialog-button.primary {
+      border-color: var(--accent);
+      background: var(--soft);
+      color: var(--accent);
     }
 
-    .sheet-option.current {
-      background: #fafafa;
-    }
-
-    .sheet-option.current .radio-mark {
-      border-color: #be402a;
-      background: #be402a;
-      color: #fff;
-    }
-
-    .sheet-option.restore,
-    .sheet-option.cancel {
-      height: 52px;
-      justify-content: center;
-      margin-top: 28px;
-      border: 1px solid #d8d8d8;
+    .dialog-button.ghost {
       background: #fff;
-      color: #111;
-      font-size: 17px;
-      font-weight: 700;
-      text-align: center;
-    }
-
-    .sheet-option.restore {
-      margin-top: 42px;
-      border-color: #d84e37;
-      color: #d84e37;
-    }
-
-    .sheet-option.restore[hidden] + .sheet-option.cancel {
-      margin-top: 42px;
-    }
-
-    .sheet-option[hidden] {
-      display: none !important;
     }
 
     .toast {
@@ -439,22 +394,22 @@
   </style>
 </head>
 <body>
-  <main class="phone" aria-label="360 乘 800 设置应用范围图标原型">
+  <main class="phone" aria-label="360 乘 800 当前书独立排版原型">
     <section class="reader">
       <p class="mini-title">Mini Title</p>
-      <p class="reader-copy">There was a table laid with jellies and trifles with a party hat beside each place, and a birthday cake with seven candles on it in the center of the table. The cake had a book drawn on it, in icing. Mymother, who had organized the party, told me that</p>
+      <p class="reader-copy">There was a table laid with jellies and trifles with a party hat beside each place, and a birthday cake with seven candles on it in the center of the table. The cake had a book drawn on it, in icing. Mymother, who had organized the</p>
     </section>
 
     <section class="sheet">
       <div class="settings">
         <div class="heading-row">
           <strong>Default</strong>
-          <button class="scope-pill" id="scopePill" aria-label="打开排版应用范围">
+          <button class="scope-icon active" id="scopeIcon" aria-label="当前书独立排版，点击应用到全局">
             <svg viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="3.5"></circle>
-              <path d="M12 2.8v3M12 18.2v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2.8 12h3M18.2 12h3M4.9 19.1 7 17M17 7l2.1-2.1"></path>
+              <path d="M4.5 5.2c2.6-.7 4.7-.2 7.5 1.7v12.4c-2.8-1.9-4.9-2.4-7.5-1.7V5.2Z"></path>
+              <path d="M19.5 5.2c-2.6-.7-4.7-.2-7.5 1.7v12.4c2.8-1.9 4.9-2.4 7.5-1.7V5.2Z"></path>
+              <path d="M12 6.9v12.4"></path>
             </svg>
-            <span id="scopeHint">跟随全局</span>
           </button>
         </div>
 
@@ -465,10 +420,10 @@
           <button class="preset" data-preset="relax">Relax</button>
         </div>
 
-        <div class="section-title"><span>Font</span><span id="fontValue">20</span></div>
+        <div class="section-title"><span>Font</span><span id="fontValue">21</span></div>
         <label class="control">
           <span>A</span>
-          <input id="fontSize" type="range" min="16" max="26" value="20">
+          <input id="fontSize" type="range" min="16" max="26" value="21">
           <span>A</span>
         </label>
 
@@ -478,7 +433,6 @@
             <label class="mini-line">
               <span>☰</span>
               <input id="lineHeight" type="range" min="1.15" max="1.85" step="0.05" value="1.5">
-              <span></span>
             </label>
           </div>
           <div class="mini-control">
@@ -486,14 +440,13 @@
             <label class="mini-line">
               <span>▤</span>
               <input id="marginSize" type="range" min="18" max="38" value="26">
-              <span></span>
             </label>
           </div>
         </div>
 
         <div class="section-title"><span>Color</span><span></span></div>
         <div class="colors">
-          <button class="color active" style="--bg:#f7f7f4" data-bg="#f7f7f4"></button>
+          <button class="color active" style="--bg:#fffefa" data-bg="#fffefa"></button>
           <button class="color" style="--bg:#eeeeee" data-bg="#eeeeee"></button>
           <button class="color" style="--bg:#f1e8da" data-bg="#f1e8da"></button>
           <button class="color" style="--bg:#e8f2e8" data-bg="#e8f2e8"></button>
@@ -516,25 +469,23 @@
     </section>
 
     <div class="overlay" id="overlay">
-      <div class="action-sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-        <h2 id="sheetTitle">排版应用范围</h2>
-        <p id="sheetText">当前跟随全局排版设置，修改后可选择仅本书或所有书籍生效。</p>
-        <button class="sheet-option choice" data-mode="book"><span class="radio-mark">✓</span><span>仅对本书生效</span></button>
-        <button class="sheet-option choice" data-mode="all"><span class="radio-mark">✓</span><span>对所有书籍生效</span></button>
-        <button class="sheet-option restore" data-mode="global">恢复跟随全局样式</button>
-        <button class="sheet-option cancel" data-mode="cancel">取消</button>
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
+        <h2 id="dialogTitle">是否应用到全局？</h2>
+        <p>当前书正在使用独立排版。应用到全局后，这套样式会同步给所有跟随全局的书籍。</p>
+        <div class="dialog-actions">
+          <button class="dialog-button primary" id="applyGlobal">应用到全局</button>
+          <button class="dialog-button ghost" id="cancelDialog">继续仅本书生效</button>
+        </div>
       </div>
     </div>
 
-    <div class="toast" id="toast">仅本书生效</div>
+    <div class="toast" id="toast">当前书独立排版</div>
   </main>
 
   <script>
     const root = document.documentElement;
-    const scopePill = document.getElementById("scopePill");
-    const scopeHint = document.getElementById("scopeHint");
+    const scopeIcon = document.getElementById("scopeIcon");
     const overlay = document.getElementById("overlay");
-    const sheetText = document.getElementById("sheetText");
     const toast = document.getElementById("toast");
     const fontSize = document.getElementById("fontSize");
     const lineHeight = document.getElementById("lineHeight");
@@ -542,25 +493,12 @@
     const fontValue = document.getElementById("fontValue");
     const lineValue = document.getElementById("lineValue");
     const marginValue = document.getElementById("marginValue");
+    const applyGlobal = document.getElementById("applyGlobal");
+    const cancelDialog = document.getElementById("cancelDialog");
 
-    const params = new URLSearchParams(location.search);
-    let scope = params.get("scope") === "book" ? "book" : "global";
-    let sheetSelection = scope === "book" ? "book" : null;
-    let globalStyle = { size: 20, line: 1.5, margin: 26, bg: "#f7f7f4" };
-    let bookStyle = { ...globalStyle };
-
-    const scopeCopy = {
-      book: {
-        hint: "仅本书",
-        text: "当前仅对本书生效，你可以改为应用到所有书籍，或恢复跟随全局样式。",
-        toast: "后续修改仅影响当前书"
-      },
-      global: {
-        hint: "跟随全局",
-        text: "当前跟随全局排版设置，你可以选择仅本书或所有书籍生效。",
-        toast: "已恢复跟随全局"
-      }
-    };
+    let bookStyle = { size: 21, line: 1.5, margin: 26, bg: "#fffefa" };
+    let globalStyle = { ...bookStyle };
+    let isBookIndependent = true;
 
     function showToast(message) {
       toast.textContent = message;
@@ -569,135 +507,70 @@
       showToast.timer = setTimeout(() => toast.classList.remove("show"), 1200);
     }
 
+    function activeStyle() {
+      return isBookIndependent ? bookStyle : globalStyle;
+    }
+
     function applyStyle() {
-      const style = scope === "book" ? bookStyle : globalStyle;
+      const style = activeStyle();
       root.style.setProperty("--reader-size", `${style.size}px`);
       root.style.setProperty("--reader-leading", style.line);
       root.style.setProperty("--reader-x", `${style.margin}px`);
       root.style.setProperty("--paper", style.bg);
+      fontSize.value = style.size;
+      lineHeight.value = style.line;
+      marginSize.value = style.margin;
       fontValue.textContent = style.size;
-      lineValue.textContent = style.line.toFixed(1);
+      lineValue.textContent = Number(style.line).toFixed(1);
       marginValue.textContent = style.margin;
-    }
-
-    function renderScope() {
-      scopePill.className = `scope-pill ${scope}`;
-      scopeHint.textContent = scopeCopy[scope].hint;
-      sheetText.textContent = scopeCopy[scope].text;
-      document.querySelectorAll(".sheet-option").forEach((button) => {
-        const isCurrent = button.dataset.mode === sheetSelection;
-        button.classList.toggle("current", isCurrent);
-        if (button.dataset.mode === "global") {
-          button.hidden = scope !== "book";
-        }
+      document.querySelectorAll(".color").forEach((button) => {
+        button.classList.toggle("active", button.dataset.bg === style.bg);
       });
+      scopeIcon.classList.toggle("active", isBookIndependent);
     }
 
-    function markChanged() {
-      showToast(scope === "book" ? "已更新本书样式" : "已更新全局样式");
+    function updateBookStyle(patch) {
+      bookStyle = { ...bookStyle, ...patch };
+      isBookIndependent = true;
+      applyStyle();
+      showToast("已更新当前书排版");
     }
 
-    function openScopeSheet() {
+    scopeIcon.addEventListener("click", () => {
       overlay.classList.add("open");
-      renderScope();
-    }
-
-    function updateActiveColor(bg) {
-      document.querySelectorAll(".color").forEach((item) => {
-        item.classList.toggle("active", item.dataset.bg === bg);
-      });
-    }
-
-    function chooseScope(mode) {
-      const wasBook = scope === "book";
-      if (mode === "book") {
-        scope = "book";
-        sheetSelection = "book";
-        bookStyle = { ...globalStyle };
-      } else {
-        scope = "global";
-        sheetSelection = null;
-        if (wasBook) {
-          globalStyle = { ...bookStyle };
-        }
-        bookStyle = { ...globalStyle };
-      }
-      applyStyle();
-      updateActiveColor((scope === "book" ? bookStyle : globalStyle).bg);
-      renderScope();
-    }
-
-    function updateStyle(patch) {
-      if (scope === "book") {
-        bookStyle = { ...bookStyle, ...patch };
-        applyStyle();
-        markChanged();
-        return;
-      }
-
-      globalStyle = { ...globalStyle, ...patch };
-      bookStyle = { ...globalStyle };
-      applyStyle();
-      markChanged();
-    }
-
-    scopePill.addEventListener("click", () => {
-      openScopeSheet();
     });
 
     overlay.addEventListener("click", (event) => {
       if (event.target === overlay) overlay.classList.remove("open");
     });
 
-    document.querySelectorAll(".sheet-option").forEach((button) => {
-      button.addEventListener("click", () => {
-        const mode = button.dataset.mode;
-        overlay.classList.remove("open");
-        if (mode === "cancel") {
-          applyStyle();
-          updateActiveColor((scope === "book" ? bookStyle : globalStyle).bg);
-          renderScope();
-          return;
-        }
-        if (mode === "global") {
-          scope = "global";
-          sheetSelection = null;
-          bookStyle = { ...globalStyle };
-          applyStyle();
-          updateActiveColor(globalStyle.bg);
-          renderScope();
-          showToast("已恢复跟随全局");
-          return;
-        }
-        chooseScope(mode);
-        renderScope();
-        showToast(mode === "book" ? "已设为仅本书生效" : "已应用到所有书籍");
-      });
+    applyGlobal.addEventListener("click", () => {
+      globalStyle = { ...bookStyle };
+      isBookIndependent = false;
+      overlay.classList.remove("open");
+      applyStyle();
+      showToast("已应用到全局");
     });
 
-    fontSize.addEventListener("input", () => {
-      updateStyle({ size: Number(fontSize.value) });
+    cancelDialog.addEventListener("click", () => {
+      overlay.classList.remove("open");
+      showToast("继续仅本书生效");
     });
 
-    lineHeight.addEventListener("input", () => {
-      updateStyle({ line: Number(lineHeight.value) });
-    });
-
-    marginSize.addEventListener("input", () => {
-      updateStyle({ margin: Number(marginSize.value) });
-    });
+    fontSize.addEventListener("input", () => updateBookStyle({ size: Number(fontSize.value) }));
+    lineHeight.addEventListener("input", () => updateBookStyle({ line: Number(lineHeight.value) }));
+    marginSize.addEventListener("input", () => updateBookStyle({ margin: Number(marginSize.value) }));
 
     document.querySelectorAll(".color").forEach((button) => {
-      button.addEventListener("click", () => {
-        updateStyle({ bg: button.dataset.bg });
-      });
+      button.addEventListener("click", () => updateBookStyle({ bg: button.dataset.bg }));
     });
 
     document.querySelectorAll(".preset").forEach((button) => {
       button.addEventListener("click", () => {
         document.querySelectorAll(".preset").forEach((item) => item.classList.remove("active"));
         button.classList.add("active");
-        showToast(`${button.textContent} 已应用`);
+        updateBookStyle({});
+        showToast(`${button.textContent} 已应用到当前书`);
       });
     });
 
@@ -710,8 +583,7 @@
     });
 
     applyStyle();
-    renderScope();
-    if (params.get("sheet") === "1") {
+    if (new URLSearchParams(location.search).get("sheet") === "1") {
       overlay.classList.add("open");
     }
   </script>
