@@ -132,7 +132,7 @@
     }
 
     .scope-icon.locked {
-      cursor: default;
+      cursor: pointer;
       opacity: .7;
     }
 
@@ -426,7 +426,7 @@
       <div class="settings">
         <div class="heading-row">
           <strong>Default</strong>
-          <button class="scope-icon locked" id="scopeIcon" aria-label="未修改排版参数" disabled>
+          <button class="scope-icon locked" id="scopeIcon" aria-label="未修改排版参数">
             <svg class="book-icon" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M4.5 6.3c2.6-.6 4.8-.1 7.5 1.7v10.8c-2.7-1.8-4.9-2.3-7.5-1.7V6.3Z"></path>
               <path d="M19.5 6.3c-2.6-.6-4.8-.1-7.5 1.7v10.8c2.7-1.8 4.9-2.3 7.5-1.7V6.3Z"></path>
@@ -532,6 +532,7 @@
     let scopeState = ["default", "book", "global"].includes(params.get("state"))
       ? params.get("state")
       : "default";
+    let hasShownDefaultHint = false;
 
     function showToast(message) {
       toast.textContent = message;
@@ -564,7 +565,6 @@
       scopeIcon.classList.toggle("book-active", scopeState === "book");
       scopeIcon.classList.toggle("global-state", scopeState === "global");
       scopeIcon.classList.toggle("locked", scopeState === "default");
-      scopeIcon.disabled = scopeState === "default";
       scopeIcon.setAttribute(
         "aria-label",
         scopeState === "book"
@@ -584,7 +584,13 @@
     }
 
     scopeIcon.addEventListener("click", () => {
-      if (scopeState === "default") return;
+      if (scopeState === "default") {
+        if (!hasShownDefaultHint) {
+          hasShownDefaultHint = true;
+          showToast("修改排版后可设置应用范围");
+        }
+        return;
+      }
 
       if (scopeState === "book") {
         overlay.classList.add("open");
