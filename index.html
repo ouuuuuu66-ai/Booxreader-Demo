@@ -94,7 +94,7 @@
       place-items: center;
       border: 0;
       background: transparent;
-      color: #b7c9ee;
+      color: #8a8f98;
       cursor: pointer;
       padding: 0;
       transition: color .16s ease, transform .16s ease;
@@ -116,7 +116,7 @@
     }
 
     .scope-icon.book-active {
-      color: #4f8cff;
+      color: #d65a3f;
     }
 
     .scope-icon.global-state {
@@ -129,11 +129,6 @@
 
     .scope-icon.global-state .globe-icon {
       display: block;
-    }
-
-    .scope-icon.locked {
-      cursor: pointer;
-      opacity: .7;
     }
 
     .scope-icon:active {
@@ -426,7 +421,7 @@
       <div class="settings">
         <div class="heading-row">
           <strong>Default</strong>
-          <button class="scope-icon locked" id="scopeIcon" aria-label="未修改排版参数">
+          <button class="scope-icon global-state" id="scopeIcon" aria-label="当前书使用全局排版，点击切换为仅本书">
             <svg class="book-icon" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M4.5 6.3c2.6-.6 4.8-.1 7.5 1.7v10.8c-2.7-1.8-4.9-2.3-7.5-1.7V6.3Z"></path>
               <path d="M19.5 6.3c-2.6-.6-4.8-.1-7.5 1.7v10.8c2.7-1.8 4.9-2.3 7.5-1.7V6.3Z"></path>
@@ -500,7 +495,7 @@
     <div class="overlay" id="overlay">
       <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
         <h2 id="dialogTitle">是否应用到全局？</h2>
-        <p>当前书正在使用独立排版。应用到全局后，这套样式会同步给所有跟随全局的书籍。</p>
+        <p>当前排版将同步至所有书籍。</p>
         <div class="dialog-actions">
           <button class="dialog-button primary" id="applyGlobal">应用至全局</button>
           <button class="dialog-button ghost" id="cancelDialog">取消</button>
@@ -526,13 +521,12 @@
     const cancelDialog = document.getElementById("cancelDialog");
 
     const params = new URLSearchParams(location.search);
-    const appDefaultStyle = { size: 21, line: 1.5, margin: 26, bg: "#fffefa" };
-    let bookStyle = { ...appDefaultStyle };
-    let globalStyle = { ...appDefaultStyle };
-    let scopeState = ["default", "book", "global"].includes(params.get("state"))
+    const initialGlobalStyle = { size: 21, line: 1.5, margin: 26, bg: "#fffefa" };
+    let globalStyle = { ...initialGlobalStyle };
+    let bookStyle = { ...globalStyle };
+    let scopeState = ["book", "global"].includes(params.get("state"))
       ? params.get("state")
-      : "default";
-    let hasShownDefaultHint = false;
+      : "global";
 
     function showToast(message) {
       toast.textContent = message;
@@ -543,8 +537,7 @@
 
     function activeStyle() {
       if (scopeState === "book") return bookStyle;
-      if (scopeState === "global") return globalStyle;
-      return appDefaultStyle;
+      return globalStyle;
     }
 
     function applyStyle() {
@@ -564,14 +557,11 @@
       });
       scopeIcon.classList.toggle("book-active", scopeState === "book");
       scopeIcon.classList.toggle("global-state", scopeState === "global");
-      scopeIcon.classList.toggle("locked", scopeState === "default");
       scopeIcon.setAttribute(
         "aria-label",
         scopeState === "book"
           ? "当前书独立排版，点击应用到全局"
-          : scopeState === "global"
-            ? "当前书使用全局排版，点击切换为仅本书"
-            : "未修改排版参数"
+          : "当前书使用全局排版，点击切换为仅本书"
       );
     }
 
@@ -584,14 +574,6 @@
     }
 
     scopeIcon.addEventListener("click", () => {
-      if (scopeState === "default") {
-        if (!hasShownDefaultHint) {
-          hasShownDefaultHint = true;
-          showToast("修改排版后可设置应用范围");
-        }
-        return;
-      }
-
       if (scopeState === "book") {
         overlay.classList.add("open");
         return;
@@ -600,7 +582,7 @@
       bookStyle = { ...globalStyle };
       scopeState = "book";
       applyStyle();
-      showToast("当前修改仅作用于本书");
+      showToast("已切换为仅本书排版");
     });
 
     overlay.addEventListener("click", (event) => {
