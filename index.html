@@ -111,24 +111,12 @@
       stroke-linejoin: round;
     }
 
-    .scope-icon .globe-icon {
-      display: none;
-    }
-
     .scope-icon.book-active {
       color: #d65a3f;
     }
 
     .scope-icon.global-state {
-      color: #8a8f98;
-    }
-
-    .scope-icon.global-state .book-icon {
       display: none;
-    }
-
-    .scope-icon.global-state .globe-icon {
-      display: block;
     }
 
     .scope-icon:active {
@@ -421,18 +409,12 @@
       <div class="settings">
         <div class="heading-row">
           <strong>Default</strong>
-          <button class="scope-icon global-state" id="scopeIcon" aria-label="当前书使用全局排版，点击切换为仅本书">
+          <button class="scope-icon global-state" id="scopeIcon" aria-label="当前书独立排版，点击应用到全局">
             <svg class="book-icon" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M4.5 6.3c2.6-.6 4.8-.1 7.5 1.7v10.8c-2.7-1.8-4.9-2.3-7.5-1.7V6.3Z"></path>
               <path d="M19.5 6.3c-2.6-.6-4.8-.1-7.5 1.7v10.8c2.7-1.8 4.9-2.3 7.5-1.7V6.3Z"></path>
               <path d="M12 8v10.8"></path>
               <path d="M6.4 18.8h11.2"></path>
-            </svg>
-            <svg class="globe-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="8.2"></circle>
-              <path d="M3.8 12h16.4"></path>
-              <path d="M12 3.8c2.1 2.2 3.1 4.9 3.1 8.2S14.1 18 12 20.2"></path>
-              <path d="M12 3.8C9.9 6 8.9 8.7 8.9 12s1 6 3.1 8.2"></path>
             </svg>
           </button>
         </div>
@@ -494,7 +476,7 @@
 
     <div class="overlay" id="overlay">
       <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
-        <h2 id="dialogTitle">是否应用到全局？</h2>
+        <h2 id="dialogTitle">是否将当前排版应用到全局？</h2>
         <p>当前排版将同步至所有书籍。</p>
         <div class="dialog-actions">
           <button class="dialog-button primary" id="applyGlobal">应用至全局</button>
@@ -503,7 +485,7 @@
       </div>
     </div>
 
-    <div class="toast" id="toast">当前书独立排版</div>
+    <div class="toast" id="toast">当前修改仅作用于本书</div>
   </main>
 
   <script>
@@ -527,6 +509,7 @@
     let scopeState = ["book", "global"].includes(params.get("state"))
       ? params.get("state")
       : "global";
+    let hasShownBookToast = scopeState === "book";
 
     function showToast(message) {
       toast.textContent = message;
@@ -561,16 +544,20 @@
         "aria-label",
         scopeState === "book"
           ? "当前书独立排版，点击应用到全局"
-          : "当前书使用全局排版，点击切换为仅本书"
+          : "当前书跟随全局排版"
       );
     }
 
     function updateBookStyle(patch) {
       const base = scopeState === "book" ? bookStyle : activeStyle();
+      const wasBook = scopeState === "book";
       bookStyle = { ...base, ...patch };
       scopeState = "book";
       applyStyle();
-      showToast("当前修改仅作用于本书");
+      if (!wasBook && !hasShownBookToast) {
+        hasShownBookToast = true;
+        showToast("当前修改仅作用于本书");
+      }
     }
 
     scopeIcon.addEventListener("click", () => {
@@ -579,10 +566,7 @@
         return;
       }
 
-      bookStyle = { ...globalStyle };
-      scopeState = "book";
-      applyStyle();
-      showToast("已切换为仅本书排版");
+      return;
     });
 
     overlay.addEventListener("click", (event) => {
@@ -599,7 +583,6 @@
 
     cancelDialog.addEventListener("click", () => {
       overlay.classList.remove("open");
-      showToast("继续仅本书生效");
     });
 
     fontSize.addEventListener("input", () => updateBookStyle({ size: Number(fontSize.value) }));
