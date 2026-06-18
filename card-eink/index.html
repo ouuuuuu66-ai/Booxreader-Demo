@@ -213,24 +213,25 @@
     .float-actions {
       position:absolute; right:4.2%; top:36%; display:grid; gap:9px;
     }
-    .toc-trigger {
+    .bookmark-corner {
       position: absolute;
-      left: 4%;
-      bottom: 9%;
-      z-index: 6;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 6px 9px;
-      border: 1px solid rgba(0,0,0,.24);
-      border-radius: 999px;
-      background: rgba(239,240,237,.94);
-      box-shadow: 0 2px 7px rgba(0,0,0,.1);
-      font-size: clamp(8px, 1.1vh, 11px);
-      font-weight: 700;
+      z-index: 7;
+      right: 5.2%;
+      top: 8.5%;
+      width: clamp(17px, 2.5vh, 24px);
+      height: clamp(22px, 3.2vh, 30px);
+      display: none;
+      filter: drop-shadow(0 1px 1px rgba(255,255,255,.7));
+      pointer-events: none;
     }
-    .toc-trigger b { font-size: 1.35em; line-height: .8; }
-    .screen[data-state]:not([data-state="S0"]) .toc-trigger { display: none; }
+    .bookmark-corner.show { display: block; }
+    .bookmark-corner svg {
+      width: 100%;
+      height: 100%;
+      fill: #111;
+      stroke: #111;
+      stroke-width: 1.6;
+    }
     .round-btn {
       width: clamp(34px, 5.4vh, 48px);
       height: clamp(34px, 5.4vh, 48px);
@@ -352,7 +353,9 @@
             <span class="mini-battery"></span><span id="footerChapter">第三部</span><span><b id="pageNum">1</b>/32&nbsp;&nbsp;44%</span>
           </footer>
         </div>
-        <button class="toc-trigger interactive" id="tocTrigger" aria-label="打开目录"><b>↑</b><span>目录</span></button>
+        <span class="bookmark-corner" id="bookmarkCorner" aria-label="已添加书签">
+          <svg viewBox="0 0 24 30"><path d="M4 2h16v25l-8-5-8 5V2Z"/></svg>
+        </span>
 
         <div class="layer" id="quickLayer" data-state="S1">
           <section class="quick-panel interactive">
@@ -452,7 +455,7 @@
       <h2>交互提示</h2>
       <div class="gesture-list">
         <div class="gesture"><span class="gesture-icon">↓</span><span>从顶部下拉<small>打开全局低频设置</small></span></div>
-        <div class="gesture"><span class="gesture-icon">↑</span><span>点击屏幕内“目录”<small>也可从左侧右滑打开</small></span></div>
+        <div class="gesture"><span class="gesture-icon">→</span><span>从左侧向右滑动<small>打开章节目录</small></span></div>
         <div class="gesture"><span class="gesture-icon">●</span><span>点击正文空白<small>唤出三个悬浮按钮</small></span></div>
         <div class="gesture"><span class="gesture-icon">↔</span><span>左右滑动正文<small>在阅读状态中翻页</small></span></div>
       </div>
@@ -551,11 +554,6 @@
       });
     });
     document.querySelector(".panel-close").onclick = () => setState("S0");
-    document.getElementById("tocTrigger").onclick = e => {
-      e.preventDefault();
-      e.stopPropagation();
-      setState("S2");
-    };
     document.getElementById("closeFloat").onclick = () => setState("S0");
     document.getElementById("settingsBtn").onclick = e => {
       e.preventDefault();
@@ -570,6 +568,7 @@
     document.getElementById("bookmarkBtn").onclick = e => {
       bookmarked = !bookmarked;
       e.currentTarget.classList.toggle("active", bookmarked);
+      document.getElementById("bookmarkCorner").classList.toggle("show", bookmarked);
       showToast(bookmarked ? "已加入书签" : "已取消书签");
     };
     document.getElementById("wifiBtn").onclick = e => {
