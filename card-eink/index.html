@@ -24,7 +24,13 @@
       font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
     }
     button, input { font: inherit; color: inherit; }
-    button { border: 0; background: none; padding: 0; cursor: pointer; }
+    button {
+      border: 0;
+      background: none;
+      padding: 0;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
 
     .app {
       height: 100%;
@@ -244,31 +250,31 @@
     .round-btn svg { width:52%; height:52%; fill:none; stroke:currentColor; stroke-width:1.8; }
     .round-btn.active svg { fill:#111; }
 
-    .radial-wrap {
-      position:absolute; right:0; top:26%; width:62%; aspect-ratio:1; overflow:hidden;
+    .settings-actions {
+      position: absolute;
+      right: 4.2%;
+      top: 23%;
       z-index: 12;
+      display: grid;
+      gap: 9px;
     }
-    .radial-disc {
-      position:absolute; right:-37%; inset-block:0; width:137%; border-radius:50%;
-      background:rgba(241,242,239,.97); border:1px solid rgba(0,0,0,.22);
-      box-shadow: -5px 2px 12px rgba(0,0,0,.1);
+    .settings-action {
+      width: clamp(42px, 6.3vh, 56px);
+      height: clamp(42px, 6.3vh, 56px);
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 1px;
+      border: 1px solid rgba(0,0,0,.22);
+      border-radius: 50%;
+      background: rgba(239,240,237,.97);
+      box-shadow: 0 2px 7px rgba(0,0,0,.11);
+      font-size: clamp(7px, .95vh, 9px);
+      font-weight: 700;
     }
-    .radial-line { position:absolute; left:50%; top:50%; width:50%; height:1px; background:rgba(0,0,0,.18); transform-origin:left; }
-    .radial-line:nth-child(1){transform:rotate(45deg)} .radial-line:nth-child(2){transform:rotate(135deg)}
-    .radial-line:nth-child(3){transform:rotate(225deg)} .radial-line:nth-child(4){transform:rotate(315deg)}
-    .radial-item {
-      position:absolute; z-index:2; display:grid; place-items:center; gap:2px;
-      width:34%; height:29%; font-size:clamp(7px,1vh,10px); font-weight:700;
-    }
-    .radial-item b { font:700 clamp(12px,1.9vh,18px)/1 Georgia,serif; }
-    .radial-item svg { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.8; }
-    .radial-item.font { left:11%; top:4% } .radial-item.layout { left:0; top:35% }
-    .radial-item.turn { left:11%; bottom:4% } .radial-item.refresh { right:13%; bottom:4% }
-    .radial-close {
-      position:absolute; z-index:3; right:-1%; top:35%; width:34%; height:30%;
-      border-radius:50% 0 0 50%; background:#111; color:#fff; display:grid; place-items:center;
-    }
-    .radial-close svg { width:24px; height:24px; stroke:currentColor; }
+    .settings-action b { font: 700 clamp(12px,1.8vh,17px)/1 Georgia,serif; }
+    .settings-action svg { width: 42%; height: 42%; fill: none; stroke: currentColor; stroke-width: 1.8; }
+    .settings-back { background: #111; color: #fff; }
 
     .bottom-sheet {
       position:absolute; left:10%; right:10%; bottom:10.5%;
@@ -404,23 +410,18 @@
         </div>
 
         <div class="layer" id="radialLayer" data-state="S4">
-          <div class="radial-wrap interactive">
-            <div class="radial-disc">
-              <i class="radial-line"></i><i class="radial-line"></i><i class="radial-line"></i><i class="radial-line"></i>
-            </div>
-            <button class="radial-item font" data-open="S5"><b>Aa</b><span>字体</span></button>
-            <button class="radial-item layout" data-open="S6">
+          <div class="settings-actions interactive">
+            <button class="settings-action" data-open="S5"><b>Aa</b><span>字体</span></button>
+            <button class="settings-action" data-open="S6">
               <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg><span>排版</span>
             </button>
-            <button class="radial-item turn" id="turnMode">
+            <button class="settings-action" data-open="S7">
               <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="m10 9-3 3 3 3m4-6 3 3-3 3"/></svg><span>翻页</span>
             </button>
-            <button class="radial-item refresh" id="fullRefresh">
+            <button class="settings-action" data-open="S8">
               <svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M6.1 8a7 7 0 0 1 11.4-1L20 12M4 12l2.5 5a7 7 0 0 0 11.4-1"/></svg><span>全刷</span>
             </button>
-            <button class="radial-close" id="radialClose" aria-label="返回悬浮按钮">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M6 8h12M6 12h12M6 16h12"/></svg>
-            </button>
+            <button class="settings-action settings-back" id="radialClose" aria-label="返回悬浮按钮">×</button>
           </div>
         </div>
 
@@ -446,6 +447,29 @@
           </section>
         </div>
 
+        <div class="layer" id="turnLayer" data-state="S7">
+          <section class="bottom-sheet interactive">
+            <div class="sheet-head"><button class="back" aria-label="返回">‹</button>翻页方式</div>
+            <div class="option-list" id="turnOptions">
+              <button class="option active" data-turn="ltr"><span>左右翻页</span><span class="check">✓</span></button>
+              <button class="option" data-turn="rtl"><span>右左翻页</span><span class="check">✓</span></button>
+              <button class="option" data-turn="auto"><span>自动翻页</span><span class="check">✓</span></button>
+            </div>
+          </section>
+        </div>
+
+        <div class="layer" id="refreshLayer" data-state="S8">
+          <section class="bottom-sheet interactive">
+            <div class="sheet-head"><button class="back" aria-label="返回">‹</button>全刷频率</div>
+            <div class="option-list" id="refreshOptions">
+              <button class="option active" data-refresh="0"><span>从不</span><span class="check">✓</span></button>
+              <button class="option" data-refresh="5"><span>5页</span><span class="check">✓</span></button>
+              <button class="option" data-refresh="10"><span>10页</span><span class="check">✓</span></button>
+              <button class="option" data-refresh="20"><span>20页</span><span class="check">✓</span></button>
+            </div>
+          </section>
+        </div>
+
         <div class="toast" id="toast"></div>
         <div class="refresh-flash" id="refreshFlash"></div>
       </div>
@@ -466,7 +490,8 @@
   <script>
     const stateNames = {
       S0: "阅读状态", S1: "顶部下拉菜单", S2: "章节目录",
-      S3: "悬浮按钮", S4: "环形菜单", S5: "字体菜单", S6: "排版菜单"
+      S3: "悬浮按钮", S4: "阅读设置", S5: "字体菜单", S6: "排版菜单",
+      S7: "翻页方式", S8: "全刷频率"
     };
     const layers = [...document.querySelectorAll(".layer")];
     const screen = document.getElementById("screen");
@@ -478,7 +503,10 @@
     let page = 1;
     let wifi = true;
     let bluetooth = true;
-    let turnMode = "左右滑动";
+    let turnMode = "ltr";
+    let refreshEvery = 0;
+    let pagesSinceRefresh = 0;
+    let autoTurnTimer = null;
     let startX = 0, startY = 0, startTime = 0;
 
     const pages = [
@@ -518,6 +546,29 @@
       page = Math.max(1, Math.min(32, page + delta));
       renderPage();
       showToast(delta > 0 ? `第 ${page} 页` : `第 ${page} 页`);
+      if (refreshEvery > 0) {
+        pagesSinceRefresh++;
+        if (pagesSinceRefresh >= refreshEvery) {
+          pagesSinceRefresh = 0;
+          runRefresh();
+        }
+      }
+    }
+    function runRefresh() {
+      const flash = document.getElementById("refreshFlash");
+      flash.classList.remove("go");
+      void flash.offsetWidth;
+      flash.classList.add("go");
+      showToast("全局刷新完成");
+    }
+    function updateAutoTurn() {
+      clearInterval(autoTurnTimer);
+      autoTurnTimer = null;
+      if (turnMode === "auto") {
+        autoTurnTimer = setInterval(() => {
+          if (state === "S0") changePage(1);
+        }, 3000);
+      }
     }
 
     const chapters = ["第一部","第二部","第三部","第四部","第五部","第六部","第七部","第八部"];
@@ -527,8 +578,10 @@
     ).join("");
 
     screen.addEventListener("pointerdown", e => {
+      // Controls own their pointer sequence. The reading surface must not
+      // capture it, otherwise mobile browsers can suppress the button click.
+      if (e.target.closest("button, input, .interactive")) return;
       startX = e.clientX; startY = e.clientY; startTime = performance.now();
-      screen.setPointerCapture?.(e.pointerId);
     });
     screen.addEventListener("pointerup", e => {
       if (e.target.closest("button, input, .interactive")) return;
@@ -537,7 +590,18 @@
       const distance = Math.hypot(dx, dy);
       const rect = screen.getBoundingClientRect();
       if (distance < 12 && elapsed < 450) {
-        setState(state === "S0" ? "S3" : "S0");
+        if (state !== "S0") {
+          setState("S0");
+        } else {
+          const xRatio = (e.clientX - rect.left) / rect.width;
+          if (xRatio > .34 && xRatio < .66) {
+            setState("S3");
+          } else if (turnMode === "rtl") {
+            changePage(xRatio < .5 ? 1 : -1);
+          } else {
+            changePage(xRatio > .5 ? 1 : -1);
+          }
+        }
         return;
       }
       if (state === "S0") {
@@ -554,15 +618,30 @@
       });
     });
     document.querySelector(".panel-close").onclick = () => setState("S0");
-    document.getElementById("closeFloat").onclick = () => setState("S0");
-    document.getElementById("settingsBtn").onclick = e => {
+    document.getElementById("closeFloat").addEventListener("click", () => setState("S0"));
+    document.getElementById("settingsBtn").addEventListener("click", e => {
       e.preventDefault();
       e.stopPropagation();
       setState("S4");
-    };
-    document.getElementById("radialClose").onclick = () => setState("S3");
-    document.querySelectorAll("[data-open]").forEach(btn => btn.onclick = () => setState(btn.dataset.open));
-    document.querySelectorAll(".back").forEach(btn => btn.onclick = () => setState("S4"));
+    });
+    document.getElementById("radialClose").addEventListener("click", e => {
+      e.stopPropagation();
+      setState("S3");
+    });
+    document.querySelectorAll("[data-open]").forEach(btn => {
+      btn.addEventListener("click", e => {
+        e.preventDefault();
+        e.stopPropagation();
+        setState(btn.dataset.open);
+      });
+    });
+    document.querySelectorAll(".back").forEach(btn => {
+      btn.addEventListener("click", e => {
+        e.preventDefault();
+        e.stopPropagation();
+        setState("S4");
+      });
+    });
     document.getElementById("resetBtn").onclick = () => setState("S0");
 
     document.getElementById("bookmarkBtn").onclick = e => {
@@ -610,6 +689,26 @@
         showToast("排版已保存");
       };
     });
+    document.querySelectorAll("#turnOptions .option").forEach(option => {
+      option.addEventListener("click", e => {
+        e.stopPropagation();
+        document.querySelectorAll("#turnOptions .option").forEach(o => o.classList.remove("active"));
+        option.classList.add("active");
+        turnMode = option.dataset.turn;
+        updateAutoTurn();
+        showToast(`翻页：${option.querySelector("span").textContent}`);
+      });
+    });
+    document.querySelectorAll("#refreshOptions .option").forEach(option => {
+      option.addEventListener("click", e => {
+        e.stopPropagation();
+        document.querySelectorAll("#refreshOptions .option").forEach(o => o.classList.remove("active"));
+        option.classList.add("active");
+        refreshEvery = Number(option.dataset.refresh);
+        pagesSinceRefresh = 0;
+        showToast(`全刷：${option.querySelector("span").textContent}`);
+      });
+    });
     document.querySelectorAll(".chapter-item").forEach(item => {
       item.onclick = () => {
         document.querySelectorAll(".chapter-item").forEach(o => o.classList.remove("active"));
@@ -622,15 +721,6 @@
         setState("S0");
       };
     });
-    document.getElementById("turnMode").onclick = () => {
-      turnMode = turnMode === "左右滑动" ? "点击翻页" : "左右滑动";
-      showToast(`翻页：${turnMode}`);
-    };
-    document.getElementById("fullRefresh").onclick = () => {
-      const flash = document.getElementById("refreshFlash");
-      flash.classList.remove("go"); void flash.offsetWidth; flash.classList.add("go");
-      showToast("全局刷新完成");
-    };
     document.addEventListener("keydown", e => {
       if (e.key === "Escape") setState(state === "S5" || state === "S6" ? "S4" : "S0");
       if (state === "S0" && e.key === "ArrowRight") changePage(1);
