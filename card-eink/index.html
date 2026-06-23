@@ -1,735 +1,574 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>小墨屏阅读方案 A｜交互原型</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PaperS3 阅读悬浮菜单 Demo</title>
   <style>
-    :root {
-      color-scheme: light;
-      --ink: #111;
-      --paper: #e5e7e3;
-      --line: rgba(17, 17, 17, .18);
-      --panel: rgba(244, 245, 242, .97);
-      --muted: #666a67;
+    :root{
+      --ink:#242622;--muted:#70736b;--paper:#edf0e8;--line:#50544e;
+      --shell:#e4e7df;--card:rgba(255,255,255,.72);--shadow:0 28px 80px rgba(35,39,32,.16)
     }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { height: 100%; margin: 0; }
-    body {
-      overflow: hidden;
-      background:
-        radial-gradient(circle at 30% 18%, rgba(255,255,255,.92), transparent 34%),
-        linear-gradient(145deg, #d9d3c8, #b8b1a7);
-      color: var(--ink);
-      font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:var(--ink)}
+    body{background:radial-gradient(circle at 14% 4%,#fff,transparent 28%),linear-gradient(135deg,#dfe3da,#f5f6f1 52%,#dce0d7)}
+    button{font:inherit;color:inherit;cursor:pointer}
+    .app{width:min(1200px,calc(100% - 28px));margin:auto;padding:26px 0 42px}
+    header{display:flex;justify-content:space-between;align-items:end;gap:22px;margin-bottom:20px}
+    .kicker{margin:0 0 6px;color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+    h1{margin:0;font-size:clamp(27px,3.4vw,44px);letter-spacing:-.045em}
+    .lead{max-width:640px;margin:8px 0 0;color:var(--muted);font-size:14px;line-height:1.65}
+    .header-actions{display:flex;gap:9px;flex-wrap:wrap}
+    .plain-btn{border:1px solid #b9bdb4;border-radius:10px;padding:10px 14px;background:rgba(255,255,255,.68)}
+    .plain-btn:hover{background:#fff;border-color:#777b73}
+    .workspace{display:grid;grid-template-columns:minmax(430px,650px) minmax(280px,1fr);gap:24px;align-items:start}
+    .device-card,.guide{border:1px solid rgba(25,29,23,.1);border-radius:20px;background:var(--card);box-shadow:var(--shadow);backdrop-filter:blur(14px)}
+    .device-card{padding:18px}
+    .device{
+      position:relative;width:min(100%,540px);aspect-ratio:540/960;margin:auto;padding:4.2%;
+      border-radius:30px;background:linear-gradient(145deg,#fafbf7,#ccd1c8 48%,#f4f5f0);
+      box-shadow:inset 0 0 0 1px #b6bbb2,inset 8px 8px 18px #fff,inset -8px -8px 18px #b7bcb3,0 20px 42px rgba(0,0,0,.18);
+      container-type:inline-size
     }
-    button, input { font: inherit; color: inherit; }
-    button {
-      border: 0;
-      background: none;
-      padding: 0;
-      cursor: pointer;
-      touch-action: manipulation;
+    .screen{
+      position:relative;width:100%;height:100%;overflow:hidden;border:3px solid #4b5049;background:var(--paper);
+      box-shadow:inset 0 0 22px rgba(48,54,45,.13);touch-action:none;user-select:none
     }
-
-    .app {
-      height: 100%;
-      display: grid;
-      grid-template-columns: minmax(230px, 330px) auto minmax(230px, 330px);
-      align-items: center;
-      justify-content: center;
-      gap: clamp(28px, 4vw, 72px);
-      padding: 22px;
+    .screen::after{
+      content:"";position:absolute;inset:0;z-index:60;pointer-events:none;opacity:.13;
+      background:repeating-radial-gradient(circle at 24% 16%,rgba(31,37,29,.12) 0 1px,transparent 1px 4px);
+      mix-blend-mode:multiply
     }
-    .intro, .guide {
-      align-self: center;
-      max-width: 300px;
-      color: #292824;
+    .reader{position:absolute;inset:0;padding:6.4% 6.2% 5%;display:flex;flex-direction:column}
+    .book-meta{display:flex;justify-content:space-between;gap:12px;margin-bottom:4%;color:#60645d;font-size:2.25cqw}
+    .book-title{overflow:hidden;font-weight:700;text-overflow:ellipsis;white-space:nowrap}
+    .page-text{
+      flex:1;margin:0;overflow:hidden;color:#222420;font-family:Georgia,"Noto Serif SC","Songti SC",serif;
+      font-size:4.28cqw;line-height:1.53;letter-spacing:.012em;text-align:justify
     }
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 16px;
-      font-size: 12px;
-      letter-spacing: .16em;
-      text-transform: uppercase;
-      color: #57544d;
+    .page-footer{display:flex;justify-content:space-between;gap:10px;margin-top:2.5%;color:#696d65;font-size:2.12cqw}
+    .tap-hint{
+      position:absolute;left:50%;bottom:2.5%;z-index:5;transform:translateX(-50%);padding:.65cqw 1.5cqw;
+      border-radius:99px;background:rgba(237,240,232,.9);color:#777b73;font-size:1.9cqw;white-space:nowrap;transition:.2s
     }
-    .eyebrow::before { content: ""; width: 20px; height: 1px; background: currentColor; }
-    h1 { margin: 0 0 14px; font: 600 clamp(28px, 3vw, 42px)/1.12 Georgia, "Songti SC", serif; }
-    .intro p { margin: 0; color: #5e5a52; font-size: 14px; line-height: 1.8; }
-    .state-chip {
-      display: inline-flex;
-      margin-top: 24px;
-      padding: 8px 12px;
-      border: 1px solid rgba(0,0,0,.18);
-      border-radius: 999px;
-      font-size: 12px;
-      background: rgba(255,255,255,.35);
-      backdrop-filter: blur(8px);
+    .tap-hint.hidden{opacity:0}
+    .choice{position:absolute;inset:0;z-index:40;display:grid;place-items:center;padding:12%;background:var(--paper)}
+    .choice-inner{width:100%;text-align:center}
+    .choice h2{margin:0 0 5%;font:700 5.2cqw Georgia,serif}
+    .choice p{margin:0 0 13%;color:#686c64;font-size:2.6cqw}
+    .hand-btn{
+      display:block;width:78%;margin:7% auto;border:1.5px solid #555a53;border-radius:1px;
+      padding:5.2% 3%;background:transparent;font-size:4.3cqw;letter-spacing:.025em
     }
-
-    .device-scene {
-      position: relative;
-      height: min(92vh, 880px);
-      aspect-ratio: 3 / 4;
-      overflow: hidden;
-      border-radius: 28px;
-      background: #d9d2c5 url("./device-reference.jpg") center/cover no-repeat;
-      box-shadow: 0 28px 70px rgba(43, 37, 28, .32), 0 3px 12px rgba(0,0,0,.2);
-      user-select: none;
+    .hand-btn:active{background:#d5d9d1}
+    .thumb-zone{
+      position:absolute;bottom:3.2%;z-index:24;width:15cqw;height:15cqw;border:1.35px dashed #767a72;
+      border-radius:50%;display:grid;place-items:center;background:rgba(238,241,233,.7);font-size:1.8cqw;
+      font-weight:700;line-height:1.15;text-align:center;transition:.18s
     }
-    .screen {
-      position: absolute;
-      left: 22.9%;
-      top: 12.65%;
-      width: 50.5%;
-      height: 62.75%;
-      overflow: hidden;
-      border-radius: 2.2%;
-      background:
-        linear-gradient(rgba(255,255,255,.12), rgba(0,0,0,.02)),
-        #e3e5e1;
-      box-shadow: inset 0 0 18px rgba(0,0,0,.12);
-      touch-action: none;
-      cursor: default;
-      filter: grayscale(1) contrast(.94);
+    .thumb-zone.right{right:3.2%}.thumb-zone.left{left:3.2%}
+    .thumb-zone:hover,.thumb-zone.active{border-style:solid;color:#f3f4ef;background:#292c28}
+    .thumb-zone.menu-hidden{opacity:0;pointer-events:none}
+    .floating{position:absolute;bottom:3.2%;z-index:22;width:56%;height:43%;transition:.2s}
+    .floating.right{right:3.2%;transform-origin:100% 100%}.floating.left{left:3.2%;transform-origin:0 100%}
+    .floating.hidden{opacity:0;pointer-events:none;transform:scale(.82)}
+    .floating .circle{position:absolute}
+    .floating.right [data-action="toc"]{right:0;bottom:67%}
+    .floating.right [data-action="bookmark"]{right:31%;bottom:52%}
+    .floating.right [data-action="settings"]{right:50%;bottom:25%}
+    .floating.right [data-action="close"]{right:53%;bottom:0}
+    .floating.left [data-action="toc"]{left:0;bottom:67%}
+    .floating.left [data-action="bookmark"]{left:31%;bottom:52%}
+    .floating.left [data-action="settings"]{left:50%;bottom:25%}
+    .floating.left [data-action="close"]{left:53%;bottom:0}
+    .circle{
+      width:13cqw;height:13cqw;border:1.35px solid #3f433d;border-radius:50%;display:grid;place-items:center;
+      padding:0;background:rgba(238,241,233,.95);box-shadow:0 2px 7px rgba(25,30,23,.07)
     }
-    .screen::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 30;
-      opacity: .12;
-      background-image:
-        repeating-linear-gradient(0deg, rgba(0,0,0,.09) 0, rgba(0,0,0,.09) 1px, transparent 1px, transparent 3px);
-      mix-blend-mode: multiply;
+    .circle.active{color:#f4f5f0;background:#292c28}
+    .icon{position:relative;display:block;width:48%;height:48%}
+    .icon.close::before,.icon.close::after{content:"";position:absolute;left:49%;top:2%;width:1.4px;height:96%;background:currentColor}
+    .icon.close::before{transform:rotate(45deg)}.icon.close::after{transform:rotate(-45deg)}
+    .icon.bookmark{border:1.5px solid currentColor;border-bottom:0}
+    .icon.bookmark::after{
+      content:"";position:absolute;left:14%;right:14%;bottom:-11%;height:44%;background:var(--paper);
+      border-left:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg) skew(7deg,7deg)
     }
-    .reading {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      padding: 3.6% 5.2% 3%;
-      z-index: 1;
+    .active .icon.bookmark::after{background:#292c28}
+    .dots{display:flex;flex-direction:column;gap:7%;align-items:center}
+    .dots i{display:block;width:26%;aspect-ratio:1;border-radius:50%;background:currentColor}
+    .list-icon::before{
+      content:"";position:absolute;left:28%;right:0;top:18%;height:66%;
+      background:linear-gradient(to bottom,currentColor 0 2px,transparent 2px 31%,currentColor 31% calc(31% + 2px),transparent calc(31% + 2px) 65%,currentColor 65% calc(65% + 2px),transparent calc(65% + 2px))
     }
-    .statusbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 6%;
-      font-size: clamp(7px, 1.05vh, 10px);
-      font-weight: 600;
+    .list-icon i{position:absolute;left:4%;top:16%;width:13%;aspect-ratio:1;border-radius:50%;background:currentColor;box-shadow:0 1.45cqw 0 currentColor,0 2.9cqw 0 currentColor}
+    .radial{position:absolute;bottom:3.2%;z-index:21;width:69%;height:52%;pointer-events:auto;transition:.22s}
+    .radial.right{right:3.2%;transform-origin:100% 100%}.radial.left{left:3.2%;transform-origin:0 100%}
+    .radial.hidden{opacity:0;pointer-events:none;transform:scale(.72)}
+    .radial-item{
+      position:absolute;width:13cqw;height:13cqw;border:1.35px solid #444840;border-radius:50%;display:grid;place-items:center;
+      padding:0;background:rgba(238,241,233,.97);font-size:2.25cqw;font-weight:650;line-height:1.08;text-align:center;transition:.14s
     }
-    .status-icons { display: flex; align-items: center; gap: 5px; }
-    .battery { width: 19px; height: 9px; border: 1px solid; padding: 1px; position: relative; }
-    .battery::after { content:""; position:absolute; right:-3px; top:2px; width:2px; height:4px; background:currentColor; }
-    .battery span { display:block; height:100%; width:80%; background:currentColor; }
-    .chapter-head {
-      padding: 4% 0 3%;
-      text-align: center;
-      border-bottom: 1px dashed rgba(0,0,0,.33);
-      font-family: "Songti SC", SimSun, serif;
-      font-weight: 700;
-      font-size: clamp(12px, 1.9vh, 17px);
+    .radial-item:hover,.radial-item.selected{color:#f3f4ef;background:#292c28;transform:scale(1.05)}
+    .radial.right .font{right:0;bottom:75%}
+    .radial.right .layout{right:29%;bottom:68%}
+    .radial.right .auto{right:52%;bottom:48%}
+    .radial.right .turn{right:61%;bottom:20%}
+    .radial.right .more{right:56%;bottom:0}
+    .radial.left .font{left:0;bottom:75%}
+    .radial.left .layout{left:29%;bottom:68%}
+    .radial.left .auto{left:52%;bottom:48%}
+    .radial.left .turn{left:61%;bottom:20%}
+    .radial.left .more{left:56%;bottom:0}
+    .panel{
+      position:absolute;z-index:30;left:50%;top:50%;width:62%;padding:4.2%;border:1.3px solid #52574f;
+      border-radius:3cqw;background:rgba(239,242,233,.985);box-shadow:0 8px 22px rgba(22,27,20,.12);
+      transform:translate(-50%,-50%)
     }
-    .page-index {
-      padding: 2.3% 0;
-      text-align: center;
-      border-bottom: 1px dashed rgba(0,0,0,.25);
-      font: 600 clamp(10px, 1.6vh, 15px)/1 Georgia, serif;
+    .panel.hidden{display:none}
+    .panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:7%;font-size:3cqw;font-weight:760}
+    .panel-close{border:0;background:none;font-size:4cqw;line-height:1}
+    .options{display:grid;gap:2cqw}
+    .option{border:1px solid #777c73;border-radius:1.8cqw;padding:2.5cqw 2cqw;background:transparent;font-size:2.5cqw;text-align:left}
+    .option.selected{color:#f3f4ef;background:#292c28}
+    .toc{
+      position:absolute;left:0;right:0;bottom:0;z-index:32;max-height:63%;overflow:auto;padding:6%;
+      border:1.4px solid #4d524a;border-bottom:0;border-radius:4cqw 4cqw 0 0;background:rgba(239,242,233,.992);
+      box-shadow:0 -8px 24px rgba(22,27,20,.12);transition:.25s
     }
-    .article {
-      flex: 1;
-      overflow: hidden;
-      padding-top: 2.6%;
-      font-family: "Songti SC", SimSun, serif;
-      font-size: clamp(11px, 1.64vh, 16px);
-      line-height: 1.65;
-      letter-spacing: .045em;
-      text-align: justify;
+    .toc.hidden{display:none}.toc h3{margin:0;font:700 4.2cqw Georgia,serif}
+    .chapter{display:flex;justify-content:space-between;width:100%;border:0;border-bottom:1px solid #b9bdb4;padding:3.5% 0;background:none;font-size:2.65cqw;text-align:left}
+    .page-bookmark{
+      position:absolute;right:6.6%;top:5.2%;z-index:8;width:5.4cqw;height:7.2cqw;border:1.5px solid #353934;
+      border-bottom:0;background:var(--paper)
     }
-    .article p { margin: 0 0 .6em; text-indent: 2em; }
-    .article p:first-child { text-indent: 0; }
-    .footer {
-      height: 6.8%;
-      display: grid;
-      grid-template-columns: 1fr auto auto;
-      align-items: end;
-      gap: 10px;
-      font-size: clamp(9px, 1.35vh, 13px);
-      font-weight: 700;
+    .page-bookmark::after{
+      content:"";position:absolute;left:14%;right:14%;bottom:-1.1cqw;height:3.5cqw;background:var(--paper);
+      border-left:1.5px solid #353934;border-bottom:1.5px solid #353934;transform:rotate(-45deg) skew(7deg,7deg)
     }
-    .mini-battery { width: 18px; height: 10px; border: 1px solid; padding: 1px; align-self:center; }
-    .mini-battery::after { content:""; display:block; width:30%; height:100%; background:#111; }
-
-    .layer {
-      position: absolute;
-      inset: 0;
-      z-index: 8;
-      display: none;
-      background: rgba(226,228,224,.18);
+    .page-bookmark.hidden{display:none}
+    .refresh{position:absolute;inset:0;z-index:70;pointer-events:none;opacity:0;background:#222}
+    .refresh.go{animation:epd .78s steps(4)}
+    @keyframes epd{0%{opacity:.94}24%{opacity:.07;background:#fff}51%{opacity:.78;background:#222}78%{opacity:.06;background:#fff}100%{opacity:0}}
+    .status{display:flex;justify-content:space-between;gap:12px;padding:14px 4px 0;color:#656960;font-size:12px}
+    .dot{display:inline-block;width:8px;height:8px;margin-right:7px;border-radius:50%;background:#292c28;box-shadow:0 0 0 4px #d9ddd4}
+    .guide{padding:22px}.guide h2{margin:0 0 6px;font-size:20px}.guide>p{margin:0 0 17px;color:var(--muted);font-size:13px;line-height:1.6}
+    .step{display:grid;grid-template-columns:31px 1fr;gap:12px;padding:13px 0;border-top:1px solid #d7dad2}
+    .num{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;background:#292c28;font-size:12px;font-weight:760}
+    .step h3{margin:1px 0 4px;font-size:14px}.step p{margin:0;color:#70746b;font-size:12px;line-height:1.55}
+    .state{margin-top:16px;padding:15px;border-radius:12px;background:#eceee8}
+    .state-row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:12px}
+    .state-row span:last-child{font-weight:750;text-align:right}
+    .toast{
+      position:fixed;left:50%;bottom:22px;z-index:100;transform:translate(-50%,16px);opacity:0;
+      padding:10px 16px;border-radius:99px;color:#fff;background:#222520;font-size:12px;transition:.22s;pointer-events:none
     }
-    .layer.is-visible { display: block; animation: appear .1s linear; }
-    @keyframes appear { from { opacity: .72 } to { opacity: 1 } }
-
-    .quick-panel {
-      position: absolute;
-      left: 3.8%;
-      right: 3.8%;
-      top: 5.8%;
-      padding: 4.2% 5% 4.5%;
-      border: 1px solid rgba(0,0,0,.16);
-      border-radius: 10px;
-      background: var(--panel);
-      box-shadow: 0 4px 15px rgba(0,0,0,.11);
-    }
-    .toggle-row { display:grid; grid-template-columns: repeat(3, 1fr); gap: 4%; margin-bottom: 5%; }
-    .quick-toggle { display:grid; place-items:center; gap: 4px; font-size: clamp(8px, 1.15vh, 11px); }
-    .quick-toggle svg { width: clamp(18px, 3vh, 27px); height: clamp(18px, 3vh, 27px); stroke-width: 1.7; }
-    .quick-toggle .value { font-size: .86em; color: var(--muted); }
-    .quick-toggle.off { opacity: .42; }
-    .slider-row { display:grid; grid-template-columns: 30% 1fr; align-items:center; gap: 5%; margin-top: 4%; font-size: clamp(8px, 1.2vh, 11px); font-weight:600; }
-    .slider-label { display:flex; align-items:center; gap:6px; }
-    input[type=range] { width:100%; accent-color:#111; height: 14px; }
-
-    .toc-panel {
-      width: 48%;
-      height: 100%;
-      padding: 5.5% 4%;
-      background: rgba(240,241,238,.98);
-      border-right: 1px solid rgba(0,0,0,.2);
-      box-shadow: 6px 0 16px rgba(0,0,0,.08);
-    }
-    .panel-title { display:flex; align-items:center; justify-content:space-between; margin-bottom: 8%; font-size: clamp(12px,1.7vh,16px); font-weight:700; }
-    .panel-close { width: 25px; height:25px; font-size: 24px; line-height:1; }
-    .chapter-list { display:grid; gap: 1.4%; }
-    .chapter-item {
-      display:flex; justify-content:space-between; align-items:center;
-      min-height: clamp(35px, 5.2vh, 48px);
-      padding: 0 7%;
-      border-radius: 6px;
-      font-size: clamp(9px,1.3vh,13px);
-      font-weight:600;
-    }
-    .chapter-item.active { background:#d9dad7; }
-
-    .float-actions {
-      position:absolute; right:4.2%; top:36%; display:grid; gap:9px;
-    }
-    .bookmark-corner {
-      position: absolute;
-      z-index: 7;
-      right: 5.2%;
-      top: 8.5%;
-      width: clamp(17px, 2.5vh, 24px);
-      height: clamp(22px, 3.2vh, 30px);
-      display: none;
-      filter: drop-shadow(0 1px 1px rgba(255,255,255,.7));
-      pointer-events: none;
-    }
-    .bookmark-corner.show { display: block; }
-    .bookmark-corner svg {
-      width: 100%;
-      height: 100%;
-      fill: #111;
-      stroke: #111;
-      stroke-width: 1.6;
-    }
-    .round-btn {
-      width: clamp(34px, 5.4vh, 48px);
-      height: clamp(34px, 5.4vh, 48px);
-      display:grid; place-items:center;
-      border:1px solid rgba(0,0,0,.2);
-      border-radius:50%;
-      background:rgba(239,240,237,.96);
-      box-shadow:0 2px 6px rgba(0,0,0,.1);
-    }
-    .round-btn svg { width:52%; height:52%; fill:none; stroke:currentColor; stroke-width:1.8; }
-    .round-btn.active svg { fill:#111; }
-
-    .settings-actions {
-      position: absolute;
-      right: 4.2%;
-      top: 23%;
-      z-index: 12;
-      display: grid;
-      gap: 9px;
-    }
-    .settings-action {
-      width: clamp(42px, 6.3vh, 56px);
-      height: clamp(42px, 6.3vh, 56px);
-      display: grid;
-      place-items: center;
-      align-content: center;
-      gap: 1px;
-      border: 1px solid rgba(0,0,0,.22);
-      border-radius: 50%;
-      background: rgba(239,240,237,.97);
-      box-shadow: 0 2px 7px rgba(0,0,0,.11);
-      font-size: clamp(7px, .95vh, 9px);
-      font-weight: 700;
-    }
-    .settings-action b { font: 700 clamp(12px,1.8vh,17px)/1 Georgia,serif; }
-    .settings-action svg { width: 42%; height: 42%; fill: none; stroke: currentColor; stroke-width: 1.8; }
-    .settings-back { background: #111; color: #fff; }
-
-    .bottom-sheet {
-      position:absolute; left:10%; right:10%; bottom:10.5%;
-      min-height:44%; padding:5% 7%;
-      border:1px solid rgba(0,0,0,.16); border-radius:10px;
-      background:var(--panel); box-shadow:0 4px 16px rgba(0,0,0,.12);
-    }
-    .sheet-head { position:relative; text-align:center; font-size:clamp(12px,1.7vh,16px); font-weight:700; margin-bottom:7%; }
-    .back { position:absolute; left:0; top:-4px; width:28px; height:28px; font-size:25px; line-height:1; }
-    .option-list { display:grid; }
-    .option {
-      display:flex; justify-content:space-between; align-items:center;
-      min-height:clamp(38px,5.7vh,52px); font-size:clamp(10px,1.4vh,14px); font-weight:600;
-      border-bottom:1px solid rgba(0,0,0,.08);
-    }
-    .option:last-child { border-bottom:0; }
-    .check { opacity:0; font-size:20px; }
-    .option.active .check { opacity:1; }
-
-    .toast {
-      position:absolute; left:50%; top:54%; z-index:40; translate:-50% -50%;
-      padding:7px 11px; border-radius:5px; background:#111; color:#fff;
-      font-size:clamp(8px,1.1vh,11px); opacity:0; pointer-events:none;
-    }
-    .toast.show { opacity:1; }
-    .refresh-flash { position:absolute; inset:0; z-index:35; background:#111; opacity:0; pointer-events:none; }
-    .refresh-flash.go { animation: flash .22s steps(1); }
-    @keyframes flash { 0%{opacity:1} 50%{opacity:0} 75%{opacity:.65} 100%{opacity:0} }
-
-    .guide h2 { margin:0 0 16px; font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:#555149; }
-    .gesture-list { display:grid; gap:10px; }
-    .gesture {
-      display:grid; grid-template-columns:32px 1fr; gap:12px; align-items:center;
-      padding:10px 0; border-bottom:1px solid rgba(0,0,0,.12);
-      font-size:13px;
-    }
-    .gesture:last-child { border-bottom:0; }
-    .gesture-icon { width:30px; height:30px; display:grid; place-items:center; border:1px solid rgba(0,0,0,.18); border-radius:8px; font-size:16px; }
-    .gesture small { display:block; margin-top:2px; color:#6b675f; }
-    .reset {
-      margin-top:20px; padding:10px 14px; border-radius:8px; background:#24231f; color:#fff; font-size:12px;
-    }
-
-    @media (max-width: 1020px) {
-      .app { grid-template-columns: auto minmax(210px, 260px); }
-      .intro { display:none; }
-    }
-    @media (max-width: 720px) {
-      body { overflow:auto; }
-      .app { min-height:100%; display:flex; padding:0; }
-      .guide { display:none; }
-      .device-scene { height:auto; width:100%; max-width:540px; border-radius:0; box-shadow:none; }
-    }
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+    @media(max-width:900px){.workspace{grid-template-columns:1fr}.guide,.device-card{max-width:650px;margin:auto}}
+    @media(max-width:560px){.app{width:calc(100% - 14px);padding-top:14px}header{align-items:start;flex-direction:column}.device-card{padding:8px;border-radius:14px}.device{border-radius:22px}.guide{padding:18px}.status{flex-direction:column}}
   </style>
 </head>
 <body>
-  <main class="app">
-    <section class="intro">
-      <div class="eyebrow">4-inch E-ink prototype</div>
-      <h1>小墨屏<br>阅读方案 A</h1>
-      <p>围绕单手阅读设计的低干扰交互。菜单不叠加，设置即时生效，退出后始终保留阅读上下文。</p>
-      <div class="state-chip" id="stateChip">S0 · 阅读状态</div>
-    </section>
+<main class="app">
+  <header>
+    <div>
+      <p class="kicker">PaperS3 · Reading interaction prototype</p>
+      <h1>阅读悬浮菜单 Demo</h1>
+      <p class="lead">参考 PaperS3 实机表现制作。支持左右手布局、四键悬浮菜单、环形阅读设置、目录、书签、三种翻页方式、自动翻页和长按全局刷新。</p>
+    </div>
+    <div class="header-actions">
+      <button class="plain-btn" id="chooseAgain">重新选择左右手</button>
+      <button class="plain-btn" id="refreshButton">模拟全屏刷新</button>
+    </div>
+  </header>
 
-    <section class="device-scene" aria-label="手持四寸墨水屏交互原型">
-      <div class="screen" id="screen">
-        <div class="reading">
-          <div class="statusbar">
-            <span id="clock">10:30</span>
-            <span class="status-icons">
-              <span id="wifiMini">⌁</span><span id="btMini">ᛒ</span>
-              <span class="battery"><span></span></span><span>80%</span>
-            </span>
-          </div>
-          <div class="chapter-head" id="chapterTitle">第三部</div>
-          <div class="page-index" id="pageIndex">8</div>
-          <article class="article" id="article">
-            <p>没经医生同意就停药了，一个月后我又去精神科开了药。本以为这段时间正在好转，但情况突然又变得不太好。一到傍晚就口干舌燥，心跳过速，疲惫感无法消除，难以入睡。</p>
-            <p>朋友们说，好好生活是对前夫唯一的报复，让我向前看。所以，我一直在努力。不让自己回头，不让自己在意，不让自己感到愤怒或悲伤，尽量忘记，尽量集中在当下，尽可能地好起来。</p>
+  <section class="workspace">
+    <div class="device-card">
+      <div class="device">
+        <div class="screen" id="screen">
+          <article class="reader" id="reader">
+            <div class="book-meta"><span class="book-title">The Lighthouse Keeper's Secret</span><span id="clock">12:00</span></div>
+            <p class="page-text" id="pageText"></p>
+            <div class="page-footer"><span id="chapterName"></span><span id="pageNumber"></span></div>
           </article>
-          <footer class="footer">
-            <span class="mini-battery"></span><span id="footerChapter">第三部</span><span><b id="pageNum">1</b>/32&nbsp;&nbsp;44%</span>
-          </footer>
-        </div>
-        <span class="bookmark-corner" id="bookmarkCorner" aria-label="已添加书签">
-          <svg viewBox="0 0 24 30"><path d="M4 2h16v25l-8-5-8 5V2Z"/></svg>
-        </span>
+          <div class="page-bookmark hidden" id="pageBookmark" aria-label="当前页已添加书签"></div>
+          <div class="tap-hint" id="tapHint">短按右下角拇指热区 · 长按阅读区刷新</div>
 
-        <div class="layer" id="quickLayer" data-state="S1">
-          <section class="quick-panel interactive">
-            <div class="toggle-row">
-              <button class="quick-toggle" id="wifiBtn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 9a12 12 0 0 1 16 0M7 12a8 8 0 0 1 10 0m-7 3a3 3 0 0 1 4 0"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>
-                <b>Wi‑Fi</b><span class="value">已连接</span>
-              </button>
-              <button class="quick-toggle" id="btBtn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m12 3 5 4-5 5V3Zm0 9 5 5-5 4v-9ZM6 7l11 10M6 17 17 7"/></svg>
-                <b>蓝牙</b><span class="value">已开启</span>
-              </button>
-              <button class="quick-toggle" id="sleepBtn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 15.5A8 8 0 0 1 9 4.5 8 8 0 1 0 20 15.5Z"/></svg>
-                <b>休眠</b><span class="value" id="sleepValue">15分钟</span>
-              </button>
+          <section class="choice" id="choice">
+            <div class="choice-inner">
+              <h2>Choose reading hand</h2>
+              <p>右手模式使用右下角热区，左手模式使用左下角热区</p>
+              <button class="hand-btn" data-hand="right">right hand</button>
+              <button class="hand-btn" data-hand="left">left hand</button>
             </div>
-            <label class="slider-row">
-              <span class="slider-label">☀ <b>亮度</b></span>
-              <input id="brightness" type="range" min="20" max="100" value="72" />
-            </label>
-            <label class="slider-row">
-              <span class="slider-label">♨ <b>色温</b></span>
-              <input id="temperature" type="range" min="0" max="100" value="28" />
-            </label>
           </section>
-        </div>
 
-        <div class="layer" id="tocLayer" data-state="S2">
-          <nav class="toc-panel interactive">
-            <div class="panel-title"><span>目录</span><button class="panel-close" aria-label="关闭目录">×</button></div>
-            <div class="chapter-list" id="chapterList"></div>
+          <button class="thumb-zone right" id="thumbZone" aria-label="打开阅读悬浮菜单">右手<br>拇指热区</button>
+
+          <nav class="floating right hidden" id="floating" aria-label="阅读悬浮菜单">
+            <button class="circle" data-action="toc" title="目录"><span class="icon list-icon"><i></i></span></button>
+            <button class="circle" data-action="bookmark" title="书签"><span class="icon bookmark"></span></button>
+            <button class="circle" data-action="settings" title="设置"><span class="icon dots"><i></i><i></i><i></i></span></button>
+            <button class="circle" data-action="close" title="关闭"><span class="icon close"></span></button>
           </nav>
-        </div>
 
-        <div class="layer" id="floatLayer" data-state="S3">
-          <div class="float-actions interactive">
-            <button class="round-btn" id="closeFloat" aria-label="关闭">×</button>
-            <button class="round-btn" id="bookmarkBtn" aria-label="书签">
-              <svg viewBox="0 0 24 24"><path d="M7 4h10v16l-5-3-5 3V4Z"/></svg>
-            </button>
-            <button class="round-btn" id="settingsBtn" aria-label="设置">
-              <svg viewBox="0 0 24 24"><path d="M4 7h16M7 12h10M5 17h14"/></svg>
-            </button>
+          <div class="radial right hidden" id="radial">
+            <button class="radial-item font" data-setting="font">字体<br>Aa</button>
+            <button class="radial-item layout" data-setting="layout">排版<br>Lay</button>
+            <button class="radial-item auto" data-setting="auto">自动<br>Auto</button>
+            <button class="radial-item turn" data-setting="turn">翻页<br>Pg</button>
+            <button class="radial-item more" data-setting="more">更多<br>Set</button>
           </div>
-        </div>
 
-        <div class="layer" id="radialLayer" data-state="S4">
-          <div class="settings-actions interactive">
-            <button class="settings-action" data-open="S5"><b>Aa</b><span>字体</span></button>
-            <button class="settings-action" data-open="S6">
-              <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg><span>排版</span>
-            </button>
-            <button class="settings-action" data-open="S7">
-              <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="m10 9-3 3 3 3m4-6 3 3-3 3"/></svg><span>翻页</span>
-            </button>
-            <button class="settings-action" data-open="S8">
-              <svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M6.1 8a7 7 0 0 1 11.4-1L20 12M4 12l2.5 5a7 7 0 0 0 11.4-1"/></svg><span>全刷</span>
-            </button>
-            <button class="settings-action settings-back" id="radialClose" aria-label="返回悬浮按钮">×</button>
-          </div>
-        </div>
-
-        <div class="layer" id="fontLayer" data-state="S5">
-          <section class="bottom-sheet interactive">
-            <div class="sheet-head"><button class="back" aria-label="返回">‹</button>字体</div>
-            <div class="option-list" id="fontOptions">
-              <button class="option active" data-font='"Songti SC", SimSun, serif'><span>思源宋体</span><span class="check">✓</span></button>
-              <button class="option" data-font='"PingFang SC", "Microsoft YaHei", sans-serif'><span>思源黑体</span><span class="check">✓</span></button>
-              <button class="option" data-font='"Kaiti SC", KaiTi, serif'><span>霞鹜文楷</span><span class="check">✓</span></button>
-            </div>
+          <section class="panel hidden" id="panel">
+            <div class="panel-head"><span id="panelTitle">设置</span><button class="panel-close" id="panelClose">×</button></div>
+            <div class="options" id="options"></div>
           </section>
-        </div>
 
-        <div class="layer" id="layoutLayer" data-state="S6">
-          <section class="bottom-sheet interactive">
-            <div class="sheet-head"><button class="back" aria-label="返回">‹</button>排版</div>
-            <div class="option-list" id="layoutOptions">
-              <button class="option active" data-size="1" data-leading="1.65"><span>舒适</span><span class="check">✓</span></button>
-              <button class="option" data-size=".91" data-leading="1.45"><span>紧凑</span><span class="check">✓</span></button>
-              <button class="option" data-size="1.04" data-leading="1.9"><span>宽松</span><span class="check">✓</span></button>
-            </div>
+          <section class="toc hidden" id="toc">
+            <div class="panel-head"><h3>目录</h3><button class="panel-close" id="tocClose">×</button></div>
+            <button class="chapter" data-page="0"><span>01 · The Arrival</span><span>1</span></button>
+            <button class="chapter" data-page="1"><span>02 · The Locked Room</span><span>2</span></button>
+            <button class="chapter" data-page="2"><span>03 · A Voice in the Fog</span><span>3</span></button>
+            <button class="chapter" data-page="3"><span>04 · The Keeper's Log</span><span>4</span></button>
+            <button class="chapter" data-page="4"><span>05 · The Storm</span><span>5</span></button>
+            <button class="chapter" data-page="5"><span>06 · First Light</span><span>6</span></button>
           </section>
+          <div class="refresh" id="refresh"></div>
         </div>
-
-        <div class="layer" id="turnLayer" data-state="S7">
-          <section class="bottom-sheet interactive">
-            <div class="sheet-head"><button class="back" aria-label="返回">‹</button>翻页方式</div>
-            <div class="option-list" id="turnOptions">
-              <button class="option active" data-turn="ltr"><span>左右翻页</span><span class="check">✓</span></button>
-              <button class="option" data-turn="rtl"><span>右左翻页</span><span class="check">✓</span></button>
-              <button class="option" data-turn="auto"><span>自动翻页</span><span class="check">✓</span></button>
-            </div>
-          </section>
-        </div>
-
-        <div class="layer" id="refreshLayer" data-state="S8">
-          <section class="bottom-sheet interactive">
-            <div class="sheet-head"><button class="back" aria-label="返回">‹</button>全刷频率</div>
-            <div class="option-list" id="refreshOptions">
-              <button class="option active" data-refresh="0"><span>从不</span><span class="check">✓</span></button>
-              <button class="option" data-refresh="5"><span>5页</span><span class="check">✓</span></button>
-              <button class="option" data-refresh="10"><span>10页</span><span class="check">✓</span></button>
-              <button class="option" data-refresh="20"><span>20页</span><span class="check">✓</span></button>
-            </div>
-          </section>
-        </div>
-
-        <div class="toast" id="toast"></div>
-        <div class="refresh-flash" id="refreshFlash"></div>
       </div>
-    </section>
+      <div class="status">
+        <span><i class="dot"></i><span id="statusText">请选择左手或右手模式</span></span>
+        <span>PaperS3 竖屏比例 · 触控交互模拟</span>
+      </div>
+    </div>
 
     <aside class="guide">
-      <h2>交互提示</h2>
-      <div class="gesture-list">
-        <div class="gesture"><span class="gesture-icon">↓</span><span>从顶部下拉<small>打开全局低频设置</small></span></div>
-        <div class="gesture"><span class="gesture-icon">→</span><span>从左侧向右滑动<small>打开章节目录</small></span></div>
-        <div class="gesture"><span class="gesture-icon">●</span><span>点击正文空白<small>唤出三个悬浮按钮</small></span></div>
-        <div class="gesture"><span class="gesture-icon">↔</span><span>左右滑动正文<small>在阅读状态中翻页</small></span></div>
+      <h2>操作说明</h2>
+      <p>设备画面内所有菜单均可点击。推荐按下面顺序体验完整流程。</p>
+      <div class="step"><span class="num">1</span><div><h3>选择左右手模式</h3><p>右手模式使用右下角热区；左手模式会将热区和两级扇形菜单镜像至左下角。</p></div></div>
+      <div class="step"><span class="num">2</span><div><h3>短按拇指热区</h3><p>从所选手侧的底部扇形展开目录、书签、设置、关闭四个圆形按钮。</p></div></div>
+      <div class="step"><span class="num">3</span><div><h3>点击“设置”</h3><p>一级菜单切换为字体、排版、自动翻页、翻页方式和更多设置的二级扇形菜单。</p></div></div>
+      <div class="step"><span class="num">4</span><div><h3>翻页与自动阅读</h3><p>支持左右点击、右左点击、上下点击，以及 5 / 10 / 15 页每分钟。</p></div></div>
+      <div class="step"><span class="num">5</span><div><h3>长按刷新</h3><p>在阅读区域长按约 0.7 秒，触发一次模拟墨水屏黑白全局刷新。</p></div></div>
+      <div class="state">
+        <div class="state-row"><span>手持模式</span><span id="stateHand">未选择</span></div>
+        <div class="state-row"><span>字体</span><span id="stateFont">思源宋体</span></div>
+        <div class="state-row"><span>排版</span><span id="stateLayout">舒适</span></div>
+        <div class="state-row"><span>自动翻页</span><span id="stateAuto">关闭</span></div>
+        <div class="state-row"><span>翻页方式</span><span id="stateTurn">左右点击</span></div>
+        <div class="state-row"><span>书签</span><span id="stateBookmark">未添加</span></div>
       </div>
-      <button class="reset" id="resetBtn">回到默认阅读状态</button>
     </aside>
-  </main>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
 
-  <script>
-    const stateNames = {
-      S0: "阅读状态", S1: "顶部下拉菜单", S2: "章节目录",
-      S3: "悬浮按钮", S4: "阅读设置", S5: "字体菜单", S6: "排版菜单",
-      S7: "翻页方式", S8: "全刷频率"
-    };
-    const layers = [...document.querySelectorAll(".layer")];
-    const screen = document.getElementById("screen");
-    const article = document.getElementById("article");
-    const stateChip = document.getElementById("stateChip");
-    const toast = document.getElementById("toast");
-    let state = "S0";
-    let bookmarked = false;
-    let page = 1;
-    let wifi = true;
-    let bluetooth = true;
-    let turnMode = "ltr";
-    let refreshEvery = 0;
-    let pagesSinceRefresh = 0;
-    let autoTurnTimer = null;
-    let startX = 0, startY = 0, startTime = 0;
+<script>
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const pages = [
+    `The wind howled like a wounded beast as Eleanor stumbled up the weathered stone path to the lighthouse. Salt stung her cheeks, and the hem of her wool coat dragged through mud and seaweed. She had fled the city three days prior, leaving behind a broken engagement, a suffocating job, and the ghost of a life that no longer fit. The tiny coastal town of Brinehold had been a name on a crumpled map, a last-ditch escape. The lighthouse stood sentinel at the edge of the cliffs, its white plaster cracked and faded, its beam dark for years. Locals whispered it was cursed—haunted by the ghost of the last keeper, who had vanished one stormy night without a trace.`,
+    `The iron key resisted before the lock finally turned. Inside, the air smelled of dust, cold stone, and something faintly metallic. Eleanor set down her suitcase and listened. Above her, the spiral stair vanished into shadow. A door beneath the stairs had been painted the same grey as the wall, but its brass handle was polished bright, as though someone had touched it only moments ago. She told herself it was the salt air. She did not believe herself.`,
+    `Fog swallowed the lighthouse before sunset. Eleanor lit three candles and opened the windows just enough to hear the sea. Near midnight, a voice moved through the tower—not a word, exactly, but the shape of one, carried between the groan of timber and the rhythm of waves. She followed it upstairs. On the landing, wet footprints crossed the floor and stopped at the locked lantern room.`,
+    `The keeper's log lay beneath a loose floorboard. Its final pages were crowded with hurried notes: dates, tide heights, names of ships that had never arrived. One sentence appeared again and again—keep the light turned toward home. The last entry was written in a different hand. Eleanor recognized the handwriting before she understood why. It belonged to her grandfather.`,
+    `By dawn the storm had become a living thing. The tower shook, glass rattled, and the dead lantern flared without power. Out beyond the reef, a small boat rose and vanished between black waves. Eleanor climbed into the machinery, following instructions written fifty years ago. Gears seized, then turned. The great lens woke, scattering white fire through the rain.`,
+    `When the beam reached the harbour, the storm seemed to hesitate. The boat found the channel. Behind Eleanor, the old keeper stood for a moment in the turning light, no longer frightening, only tired. He inclined his head and faded with the fog. Morning laid a pale road across the water. For the first time in years, Brinehold's lighthouse was shining.`
+  ];
+  const chapterNames = ["Chapter 1 · The Arrival","Chapter 2 · The Locked Room","Chapter 3 · A Voice in the Fog","Chapter 4 · The Keeper's Log","Chapter 5 · The Storm","Chapter 6 · First Light"];
+  const settings = {
+    font:{title:"字体",items:["思源宋体","思源黑体","霞鹜文楷"],value:"思源宋体"},
+    layout:{title:"排版方案",items:["紧凑","舒适","宽松"],value:"舒适"},
+    auto:{title:"自动翻页",items:["关闭","5 页 / 分钟","10 页 / 分钟","15 页 / 分钟"],value:"关闭"},
+    turn:{title:"翻页方式",items:["左右点击","右左点击","上下点击"],value:"左右点击"},
+    more:{title:"更多设置",items:["显示页眉","隐藏页眉","高对比度","标准对比度"],value:"显示页眉"}
+  };
 
-    const pages = [
-      [
-        "没经医生同意就停药了，一个月后我又去精神科开了药。本以为这段时间正在好转，但情况突然又变得不太好。一到傍晚就口干舌燥，心跳过速，疲惫感无法消除，难以入睡。",
-        "朋友们说，好好生活是对前夫唯一的报复，让我向前看。所以，我一直在努力。不让自己回头，不让自己在意，不让自己感到愤怒或悲伤，尽量忘记，尽量集中在当下，尽可能地好起来。"
-      ],
-      [
-        "有一段时间，我认为自己正慢慢好起来，所以开始重新整理房间。那些被压在箱底的书和旧信，一件件回到光里。",
-        "生活没有突然变得轻松，只是我终于不再催促自己。每天多走一点，按时吃饭，也允许偶尔的阴天停留。"
-      ],
-      [
-        "清晨的风从半开的窗户钻进来，纸页轻轻响了一声。我把读到一半的书扣在桌面，第一次觉得时间不必被填满。",
-        "所谓向前，大概不是忘掉，而是能够带着那些发生过的事，仍然对下一页抱有一点好奇。"
-      ]
-    ];
+  let hand = null;
+  let page = 0;
+  let menuOpen = false;
+  let radialOpen = false;
+  let bookmarked = false;
+  let pressTimer = null;
+  let longPressed = false;
+  let startX = 0;
+  let startY = 0;
+  let autoTimer = null;
+  const screen = $("#screen");
+  const floating = $("#floating");
+  const radial = $("#radial");
+  const panel = $("#panel");
+  const toc = $("#toc");
 
-    function setState(next) {
-      state = next;
-      layers.forEach(layer => layer.classList.toggle("is-visible", layer.dataset.state === next));
-      stateChip.textContent = `${next} · ${stateNames[next]}`;
-      screen.dataset.state = next;
-    }
-    function showToast(message) {
-      toast.textContent = message;
-      toast.classList.add("show");
-      clearTimeout(showToast.timer);
-      showToast.timer = setTimeout(() => toast.classList.remove("show"), 850);
-    }
-    function renderPage() {
-      const copy = pages[(page - 1) % pages.length];
-      article.innerHTML = copy.map(t => `<p>${t}</p>`).join("");
-      document.getElementById("pageNum").textContent = page;
-      document.getElementById("pageIndex").textContent = page + 7;
-    }
-    function changePage(delta) {
-      page = Math.max(1, Math.min(32, page + delta));
-      renderPage();
-      showToast(delta > 0 ? `第 ${page} 页` : `第 ${page} 页`);
-      if (refreshEvery > 0) {
-        pagesSinceRefresh++;
-        if (pagesSinceRefresh >= refreshEvery) {
-          pagesSinceRefresh = 0;
-          runRefresh();
-        }
-      }
-    }
-    function runRefresh() {
-      const flash = document.getElementById("refreshFlash");
-      flash.classList.remove("go");
-      void flash.offsetWidth;
-      flash.classList.add("go");
-      showToast("全局刷新完成");
-    }
-    function updateAutoTurn() {
-      clearInterval(autoTurnTimer);
-      autoTurnTimer = null;
-      if (turnMode === "auto") {
-        autoTurnTimer = setInterval(() => {
-          if (state === "S0") changePage(1);
-        }, 3000);
-      }
-    }
-
-    const chapters = ["第一部","第二部","第三部","第四部","第五部","第六部","第七部","第八部"];
-    const positions = [1,12,23,35,48,61,74,88];
-    document.getElementById("chapterList").innerHTML = chapters.map((name, i) =>
-      `<button class="chapter-item ${i === 2 ? "active" : ""}" data-i="${i}"><span>${name}</span><span>${positions[i]}</span></button>`
+  function showToast(message){
+    const el = $("#toast");
+    el.textContent = message;
+    el.classList.add("show");
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(() => el.classList.remove("show"), 1600);
+  }
+  function setStatus(message){ $("#statusText").textContent = message; }
+  function renderPage(){
+    $("#pageText").textContent = pages[page];
+    $("#pageNumber").textContent = `${page + 1} / ${pages.length}`;
+    $("#chapterName").textContent = chapterNames[page];
+    updateClock();
+  }
+  function updateClock(){
+    $("#clock").textContent = new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"});
+  }
+  function setHand(side){
+    hand = side;
+    [$("#thumbZone"),floating,radial].forEach(element => {
+      element.classList.remove("left","right");
+      element.classList.add(side);
+    });
+    $("#thumbZone").innerHTML = `${side === "right" ? "右手" : "左手"}<br>拇指热区`;
+    $("#tapHint").textContent = `短按${side === "right" ? "右下角" : "左下角"}拇指热区 · 长按阅读区刷新`;
+    $("#choice").style.display = "none";
+    $("#stateHand").textContent = side === "right" ? "右手" : "左手";
+    closeAll();
+    $("#thumbZone").innerHTML = `${side === "right" ? "右手" : "左手"}<br>拇指热区`;
+    setStatus(`${side === "right" ? "右手" : "左手"}模式 · 短按${side === "right" ? "右下角" : "左下角"}拇指热区`);
+    showToast("阅读模式已就绪");
+  }
+  function exitBook(){
+    clearInterval(autoTimer);
+    autoTimer = null;
+    hand = null;
+    closeAll();
+    $("#choice").style.display = "grid";
+    $("#stateHand").textContent = "未选择";
+    setStatus("已退出本书 · 请选择左手或右手模式");
+    showToast("已退出本书阅读");
+  }
+  function openMenu(){
+    if(!hand) return;
+    menuOpen = true;
+    radialOpen = false;
+    floating.classList.remove("hidden");
+    radial.classList.add("hidden");
+    panel.classList.add("hidden");
+    toc.classList.add("hidden");
+    $("#thumbZone").classList.add("menu-hidden");
+    $("#tapHint").classList.add("hidden");
+    setStatus("悬浮菜单已打开");
+  }
+  function closeAll(){
+    menuOpen = false;
+    radialOpen = false;
+    floating.classList.add("hidden");
+    radial.classList.add("hidden");
+    panel.classList.add("hidden");
+    toc.classList.add("hidden");
+    $("#thumbZone").classList.remove("active","menu-hidden");
+    $("#thumbZone").innerHTML = `${hand === "left" ? "左手" : "右手"}<br>拇指热区`;
+    $("#tapHint").classList.remove("hidden");
+  }
+  function openRadial(){
+    menuOpen = false;
+    radialOpen = true;
+    floating.classList.add("hidden");
+    radial.classList.remove("hidden");
+    panel.classList.add("hidden");
+    $("#thumbZone").classList.add("active");
+    $("#thumbZone").classList.remove("menu-hidden");
+    $("#thumbZone").innerHTML = "返回<br>一级";
+    setStatus("环形阅读设置已展开");
+  }
+  function openSetting(key){
+    const config = settings[key];
+    $("#panelTitle").textContent = config.title;
+    $("#options").innerHTML = config.items.map(value =>
+      `<button class="option ${value === config.value ? "selected" : ""}" data-key="${key}" data-value="${value}">${value}</button>`
     ).join("");
+    radial.classList.add("hidden");
+    panel.classList.remove("hidden");
+    $("#thumbZone").classList.add("menu-hidden");
+    setStatus(`正在设置：${config.title}`);
+  }
+  function selectOption(key,value){
+    settings[key].value = value;
+    if(key === "font"){
+      const fonts = {
+        "思源宋体":'"Noto Serif SC","Source Han Serif SC","Songti SC",serif',
+        "思源黑体":'"Noto Sans SC","Source Han Sans SC","Microsoft YaHei",sans-serif',
+        "霞鹜文楷":'"LXGW WenKai","霞鹜文楷","KaiTi",cursive'
+      };
+      $("#pageText").style.fontFamily = fonts[value];
+      $("#stateFont").textContent = value;
+    }
+    if(key === "layout"){
+      const heights = {"紧凑":"1.37","舒适":"1.53","宽松":"1.72"};
+      $("#pageText").style.lineHeight = heights[value];
+      $("#stateLayout").textContent = value;
+    }
+    if(key === "auto"){
+      setAutoTurn(value);
+      $("#stateAuto").textContent = value;
+    }
+    if(key === "turn") $("#stateTurn").textContent = value;
+    if(key === "more"){
+      if(value === "隐藏页眉") $(".book-meta").style.visibility = "hidden";
+      if(value === "显示页眉") $(".book-meta").style.visibility = "visible";
+      if(value === "高对比度") screen.style.filter = "contrast(1.18)";
+      if(value === "标准对比度") screen.style.filter = "none";
+    }
+    openSetting(key);
+    showToast(`${settings[key].title}：${value}`);
+  }
+  function setAutoTurn(value){
+    clearInterval(autoTimer);
+    autoTimer = null;
+    const pagesPerMinute = parseInt(value,10);
+    if(pagesPerMinute) autoTimer = setInterval(() => changePage(1,true),60000 / pagesPerMinute);
+  }
+  function changePage(direction,automatic=false){
+    const target = Math.max(0,Math.min(pages.length - 1,page + direction));
+    if(target === page){
+      showToast(direction > 0 ? "已经是最后一页" : "已经是第一页");
+      return;
+    }
+    page = target;
+    renderPage();
+    if(!automatic) closeAll();
+    setStatus(`${automatic ? "自动" : "手动"}翻页 · 第 ${page + 1} 页`);
+  }
+  function openToc(){
+    floating.classList.add("hidden");
+    radial.classList.add("hidden");
+    panel.classList.add("hidden");
+    toc.classList.remove("hidden");
+    $("#thumbZone").classList.add("menu-hidden");
+    setStatus("目录已打开");
+  }
+  function fullRefresh(){
+    const layer = $("#refresh");
+    layer.classList.remove("go");
+    void layer.offsetWidth;
+    layer.classList.add("go");
+    setStatus("正在执行墨水屏全局刷新");
+    setTimeout(() => {
+      layer.classList.remove("go");
+      setStatus("全局刷新完成");
+    },800);
+  }
+  function handleReadingTap(localX,localY){
+    if(longPressed || !hand) return;
+    if(menuOpen || radialOpen || !panel.classList.contains("hidden") || !toc.classList.contains("hidden")) return;
+    const rect = screen.getBoundingClientRect();
+    const xRatio = localX / rect.width;
+    const yRatio = localY / rect.height;
+    let forward;
+    if(settings.turn.value === "上下点击") forward = yRatio > .5;
+    else forward = settings.turn.value === "左右点击" ? xRatio > .5 : xRatio < .5;
+    changePage(forward ? 1 : -1);
+  }
 
-    screen.addEventListener("pointerdown", e => {
-      // Controls own their pointer sequence. The reading surface must not
-      // capture it, otherwise mobile browsers can suppress the button click.
-      if (e.target.closest("button, input, .interactive")) return;
-      startX = e.clientX; startY = e.clientY; startTime = performance.now();
-    });
-    screen.addEventListener("pointerup", e => {
-      if (e.target.closest("button, input, .interactive")) return;
-      const dx = e.clientX - startX, dy = e.clientY - startY;
-      const elapsed = performance.now() - startTime;
-      const distance = Math.hypot(dx, dy);
-      const rect = screen.getBoundingClientRect();
-      if (distance < 12 && elapsed < 450) {
-        if (state !== "S0") {
-          setState("S0");
-        } else {
-          const xRatio = (e.clientX - rect.left) / rect.width;
-          if (xRatio > .34 && xRatio < .66) {
-            setState("S3");
-          } else if (turnMode === "rtl") {
-            changePage(xRatio < .5 ? 1 : -1);
-          } else {
-            changePage(xRatio > .5 ? 1 : -1);
-          }
-        }
-        return;
-      }
-      if (state === "S0") {
-        if (dy > 45 && Math.abs(dy) > Math.abs(dx) && startY < rect.top + rect.height * .28) setState("S1");
-        else if (dx > 45 && Math.abs(dx) > Math.abs(dy) && startX < rect.left + rect.width * .4) setState("S2");
-        else if (Math.abs(dx) > 38 && Math.abs(dx) > Math.abs(dy)) changePage(dx < 0 ? 1 : -1);
-      } else if (state === "S1" && dy < -38) setState("S0");
-      else if (state === "S2" && Math.abs(dx) > 38) setState("S0");
-    });
-
-    document.querySelectorAll(".layer").forEach(layer => {
-      layer.addEventListener("click", e => {
-        if (!e.target.closest(".interactive")) setState("S0");
-      });
-    });
-    document.querySelector(".panel-close").onclick = () => setState("S0");
-    document.getElementById("closeFloat").addEventListener("click", () => setState("S0"));
-    document.getElementById("settingsBtn").addEventListener("click", e => {
-      e.preventDefault();
-      e.stopPropagation();
-      setState("S4");
-    });
-    document.getElementById("radialClose").addEventListener("click", e => {
-      e.stopPropagation();
-      setState("S3");
-    });
-    document.querySelectorAll("[data-open]").forEach(btn => {
-      btn.addEventListener("click", e => {
-        e.preventDefault();
-        e.stopPropagation();
-        setState(btn.dataset.open);
-      });
-    });
-    document.querySelectorAll(".back").forEach(btn => {
-      btn.addEventListener("click", e => {
-        e.preventDefault();
-        e.stopPropagation();
-        setState("S4");
-      });
-    });
-    document.getElementById("resetBtn").onclick = () => setState("S0");
-
-    document.getElementById("bookmarkBtn").onclick = e => {
+  $$(".hand-btn").forEach(button => button.addEventListener("click",() => setHand(button.dataset.hand)));
+  $("#chooseAgain").addEventListener("click",() => {
+    clearInterval(autoTimer);
+    autoTimer = null;
+    hand = null;
+    closeAll();
+    $("#choice").style.display = "grid";
+    $("#stateHand").textContent = "未选择";
+    setStatus("请选择左手或右手模式");
+  });
+  $("#refreshButton").addEventListener("click",fullRefresh);
+  $("#thumbZone").addEventListener("click",event => {
+    event.stopPropagation();
+    if(radialOpen || !panel.classList.contains("hidden") || !toc.classList.contains("hidden")) openMenu();
+    else if(menuOpen) closeAll();
+    else openMenu();
+  });
+  floating.addEventListener("click",event => {
+    const button = event.target.closest("[data-action]");
+    if(!button) return;
+    event.stopPropagation();
+    const action = button.dataset.action;
+    if(action === "close") exitBook();
+    if(action === "bookmark"){
       bookmarked = !bookmarked;
-      e.currentTarget.classList.toggle("active", bookmarked);
-      document.getElementById("bookmarkCorner").classList.toggle("show", bookmarked);
-      showToast(bookmarked ? "已加入书签" : "已取消书签");
-    };
-    document.getElementById("wifiBtn").onclick = e => {
-      wifi = !wifi; e.currentTarget.classList.toggle("off", !wifi);
-      e.currentTarget.querySelector(".value").textContent = wifi ? "已连接" : "已关闭";
-      document.getElementById("wifiMini").style.opacity = wifi ? 1 : .25;
-    };
-    document.getElementById("btBtn").onclick = e => {
-      bluetooth = !bluetooth; e.currentTarget.classList.toggle("off", !bluetooth);
-      e.currentTarget.querySelector(".value").textContent = bluetooth ? "已开启" : "已关闭";
-      document.getElementById("btMini").style.opacity = bluetooth ? 1 : .25;
-    };
-    document.getElementById("sleepBtn").onclick = () => {
-      const el = document.getElementById("sleepValue");
-      const values = ["15分钟","30分钟","永不"];
-      el.textContent = values[(values.indexOf(el.textContent) + 1) % values.length];
-    };
-    document.getElementById("brightness").oninput = e => {
-      screen.style.filter = `grayscale(1) contrast(.94) brightness(${.72 + e.target.value / 250})`;
-    };
-    document.getElementById("temperature").oninput = e => {
-      const warmth = e.target.value / 100;
-      screen.style.backgroundColor = `rgb(${227 + warmth*12}, ${229 + warmth*7}, ${225 - warmth*10})`;
-    };
-    document.querySelectorAll("#fontOptions .option").forEach(option => {
-      option.onclick = () => {
-        document.querySelectorAll("#fontOptions .option").forEach(o => o.classList.remove("active"));
-        option.classList.add("active");
-        article.style.fontFamily = option.dataset.font;
-        showToast("字体已保存");
-      };
-    });
-    document.querySelectorAll("#layoutOptions .option").forEach(option => {
-      option.onclick = () => {
-        document.querySelectorAll("#layoutOptions .option").forEach(o => o.classList.remove("active"));
-        option.classList.add("active");
-        article.style.fontSize = `calc(clamp(11px, 1.64vh, 16px) * ${option.dataset.size})`;
-        article.style.lineHeight = option.dataset.leading;
-        showToast("排版已保存");
-      };
-    });
-    document.querySelectorAll("#turnOptions .option").forEach(option => {
-      option.addEventListener("click", e => {
-        e.stopPropagation();
-        document.querySelectorAll("#turnOptions .option").forEach(o => o.classList.remove("active"));
-        option.classList.add("active");
-        turnMode = option.dataset.turn;
-        updateAutoTurn();
-        showToast(`翻页：${option.querySelector("span").textContent}`);
-      });
-    });
-    document.querySelectorAll("#refreshOptions .option").forEach(option => {
-      option.addEventListener("click", e => {
-        e.stopPropagation();
-        document.querySelectorAll("#refreshOptions .option").forEach(o => o.classList.remove("active"));
-        option.classList.add("active");
-        refreshEvery = Number(option.dataset.refresh);
-        pagesSinceRefresh = 0;
-        showToast(`全刷：${option.querySelector("span").textContent}`);
-      });
-    });
-    document.querySelectorAll(".chapter-item").forEach(item => {
-      item.onclick = () => {
-        document.querySelectorAll(".chapter-item").forEach(o => o.classList.remove("active"));
-        item.classList.add("active");
-        const i = +item.dataset.i;
-        document.getElementById("chapterTitle").textContent = chapters[i];
-        document.getElementById("footerChapter").textContent = chapters[i];
-        page = positions[i];
-        renderPage();
-        setState("S0");
-      };
-    });
-    document.addEventListener("keydown", e => {
-      if (e.key === "Escape") setState(state === "S5" || state === "S6" ? "S4" : "S0");
-      if (state === "S0" && e.key === "ArrowRight") changePage(1);
-      if (state === "S0" && e.key === "ArrowLeft") changePage(-1);
-      if (state === "S0" && e.key === "ArrowDown") setState("S1");
-    });
-    const now = new Date();
-    document.getElementById("clock").textContent = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
-    setState("S0");
-  </script>
+      button.classList.toggle("active",bookmarked);
+      $("#pageBookmark").classList.toggle("hidden",!bookmarked);
+      $("#stateBookmark").textContent = bookmarked ? `第 ${page + 1} 页` : "未添加";
+      showToast(bookmarked ? "书签已添加" : "书签已移除");
+    }
+    if(action === "settings") openRadial();
+    if(action === "toc") openToc();
+  });
+  radial.addEventListener("click",event => {
+    const button = event.target.closest("[data-setting]");
+    if(!button) return;
+    event.stopPropagation();
+    openSetting(button.dataset.setting);
+  });
+  $("#options").addEventListener("click",event => {
+    const button = event.target.closest(".option");
+    if(button) selectOption(button.dataset.key,button.dataset.value);
+  });
+  $("#panelClose").addEventListener("click",event => {
+    event.stopPropagation();
+    panel.classList.add("hidden");
+    radial.classList.remove("hidden");
+    $("#thumbZone").classList.remove("menu-hidden");
+  });
+  $("#tocClose").addEventListener("click",event => {
+    event.stopPropagation();
+    toc.classList.add("hidden");
+    openMenu();
+  });
+  $$(".chapter").forEach(button => button.addEventListener("click",event => {
+    event.stopPropagation();
+    page = Number(button.dataset.page);
+    renderPage();
+    closeAll();
+    setStatus(`已跳转至第 ${page + 1} 章`);
+  }));
+  screen.addEventListener("pointerdown",event => {
+    if(menuOpen && !event.target.closest("#floating")){
+      longPressed = true;
+      closeAll();
+      setStatus("悬浮菜单已关闭");
+      return;
+    }
+    if(!panel.classList.contains("hidden") && !event.target.closest("#panel")) return;
+    if(!toc.classList.contains("hidden") && !event.target.closest("#toc")) return;
+    if(event.target.closest("button") || !hand) return;
+    longPressed = false;
+    startX = event.clientX;
+    startY = event.clientY;
+    pressTimer = setTimeout(() => {
+      longPressed = true;
+      fullRefresh();
+      navigator.vibrate?.(45);
+    },700);
+  });
+  screen.addEventListener("pointerup",event => {
+    clearTimeout(pressTimer);
+    if(!menuOpen && !radialOpen && panel.classList.contains("hidden") && toc.classList.contains("hidden") && !hand) return;
+    if(!panel.classList.contains("hidden") && !event.target.closest("#panel")){
+      closeAll();
+      setStatus("已返回阅读状态");
+      return;
+    }
+    if(!toc.classList.contains("hidden") && !event.target.closest("#toc")){
+      closeAll();
+      setStatus("已返回阅读状态");
+      return;
+    }
+    if(event.target.closest("button")) return;
+    const dx = event.clientX - startX;
+    const dy = event.clientY - startY;
+    const rect = screen.getBoundingClientRect();
+    handleReadingTap(event.clientX - rect.left,event.clientY - rect.top);
+  });
+  screen.addEventListener("pointercancel",() => clearTimeout(pressTimer));
+  screen.addEventListener("contextmenu",event => event.preventDefault());
+
+  renderPage();
+  setInterval(updateClock,30000);
+</script>
 </body>
 </html>
